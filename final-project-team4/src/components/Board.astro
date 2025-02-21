@@ -1,11 +1,19 @@
 ---
 import "../styles/global.css";
+import "../styles/drag-drop.css";
 
-
+const position = { x: 0, y: 0 };
 ---
 
 <div id="container" class="flex min-w-screen">
-  <div class="main-column w-full min-h-screen bg-red-200">To Do</div>
+  <div class="main-column w-full min-h-screen bg-red-200">
+    <h2>To Do</h2>
+    <div class="drop-task">
+      <div class="draggable-task">
+        <span>please drag me</span>
+      </div>
+    </div>
+  </div>
   <div class="main-column w-full min-h-screen bg-green-200">In Progress</div>
   <div class="main-column w-full min-h-screen bg-yellow-200">Done</div>
 </div>
