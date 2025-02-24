@@ -1,24 +1,18 @@
-<div class="search-container"> 
-    <div class="search-bar-box">
+---
+import '../styles/global.css'
+---
+<div class="search-container w-full h-full min-h-[20vh] flex justify-center items-center p-8"> 
+    <div class="search-bar-box shadow-[0_0_1px] rounded-[10px] overflow-visible h-[28px] relative">
         <form>
-            <input type="text" name="search" placeholder="Search..." autocomplete="off">
+            <input type="text" name="search" placeholder="Search..." autocomplete="off" class="w-[60vw] h-[28px] rounded-[10px] shadow-[0_0_1px] outline-none">
         </form>
-        <div class="suggestion hidden">
-            <ul>
-                <li>dammy1</li>
-                <li>dammy2</li>
-                <li>dammy3</li>
-                <li>dammy4</li>
-                <li>dammy5</li>
-                <li>dammy6</li>
-                <li>dammy7</li>
-                <li>dammy8</li>
-            </ul>
+        <div class="suggestion z-[10] bg-white shadow-[0_0_1px]">
+            <ul></ul>
         </div>
     </div>  
 </div>
 
-<style>
+<!-- <style>
     .search-container {
         width: 100%;
         height: 100%;
@@ -33,13 +27,28 @@
         border: 1px solid transparent;
         box-shadow: 0px 0px 1px;
         border-radius: 10px;
+        overflow: visible;
+        height: 28px;
+        position: relative;
     }
 
     input {
         width: 60vw;
         height: 28px;
         border-radius: 10px;
-        border: 1px solid transparent;
+        box-shadow: 0px 0px 1px;
+        outline: none;
+    }
+
+    .focused {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+    
+    .suggestion {
+        z-index: 10;
+        background-color: white;
+        width: 100%;
         box-shadow: 0px 0px 1px;
     }
 
@@ -51,22 +60,60 @@
         display: none;
     }
 
-</style>
+</style> -->
 
 <script>
-    const searchBar = document.querySelector('input') as HTMLInputElement
+    const input = document.querySelector('input') as HTMLInputElement
     const suggestion = document.querySelector('.suggestion') as HTMLDivElement
+    const suggestionList = document.querySelector('.suggestion ul') as HTMLUListElement
+    const searchBarBox = document.querySelector('.search-bar-box') as HTMLDivElement
+
+    // ------------------- function for suggestion to appear and disappear ------------------------
+
     let isActive = false
     
-    if (searchBar) {
-        searchBar.addEventListener('focus', () => {
+    if (input) {
+        input.addEventListener('focus', () => {
             isActive = true
             suggestion.classList.remove('hidden')
+            input.classList.add('focused')
+            searchBarBox.classList.add('focused')
         })
-        searchBar.addEventListener('blur', () => {
+        input.addEventListener('blur', () => {
             isActive = false
             suggestion.classList.add('hidden')
+            input.classList.remove('focused')
+            searchBarBox.classList.remove('focused')
         })
     }
 
+    // ----------------------- dynamic suggestion change based on the keyword ------------------------
+
+    const taskList = ['wash dish', 'go to school', 'prepare lunch', 'sing a song', 'write a letter', 'walk dog', 'wash car', 'take a nap', 'read a book', 'watch a movie', 'drink water', 'open a SNS', 'make an app', 'go outside', 'push up', 'running', 'do something good']
+
+    input.addEventListener('input', (e) => {
+        const target = e.currentTarget as HTMLInputElement
+        const keywords = target.value.replace(/\s+/g, ' '.trim()).toLowerCase()
+        suggestionList.innerHTML = ''
+        
+        let taskFound = false
+
+        taskList.forEach((task: string) => {
+            const oneStringTaks = task.replace(/\s+/g, ' '.trim()).toLowerCase()
+
+            if (oneStringTaks.includes(keywords)) {
+                const listItem = document.createElement('li')
+                listItem.textContent = task
+                suggestionList.appendChild(listItem)
+                taskFound = true
+            }
+        })
+
+        if (taskFound === false) {
+            const listItem = document.createElement('li')
+            listItem.textContent = 'No results found'
+            suggestionList.appendChild(listItem)
+        }
+    })
+    
 </script>
