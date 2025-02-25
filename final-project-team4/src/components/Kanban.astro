@@ -146,7 +146,7 @@
   class Kanban {
     board;
     statuses: string[];
-    taskLists: TaskList;
+    taskLists: { [key: string]: TaskList };
     constructor(boardId: string) {
       this.board = document.getElementById(boardId);
       this.statuses = ["ToDo", "InProgress", "Done"];
