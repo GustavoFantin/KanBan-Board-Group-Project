@@ -26,14 +26,28 @@
 </dialog>
 
 <script>
+  interface Tasks {
+    description: string;
+    element: HTMLDivElement;
+    id: string;
+    title: string;
+  }
   class TaskList {
-    constructor(status, container) {
+    status: string;
+    tasks: Tasks[];
+    container: HTMLDivElement;
+    constructor(status: string, container: HTMLDivElement) {
       this.status = status;
       this.tasks = [];
       this.container = container;
     }
 
-    addTask(title, description) {
+    getTasks() {
+      return this.tasks;
+    }
+
+    addTask(title: string, description: string) {
+      this.getTasks();
       if (!title.trim()) return;
 
       const taskId = `task-${Date.now()}`;
@@ -63,10 +77,14 @@
       <button class="text-blue-500 mt-2 ml-2" style="font-size: 14px;">Edit</button>
     `;
 
-      const deleteButton = taskElement.querySelector("button.text-red-500");
+      const deleteButton = taskElement.querySelector(
+        "button.text-red-500"
+      ) as HTMLButtonElement;
       deleteButton.addEventListener("click", () => this.remove(taskId));
 
-      const editButton = taskElement.querySelector("button.text-blue-500");
+      const editButton = taskElement.querySelector(
+        "button.text-blue-500"
+      ) as HTMLButtonElement;
       editButton.addEventListener("click", () =>
         this.update(taskId, title, description)
       );
@@ -76,7 +94,7 @@
       this.container.appendChild(taskElement);
     }
 
-    remove(taskId) {
+    remove(taskId: string) {
       const taskIndex = this.tasks.findIndex((task) => task.id === taskId);
       if (taskIndex !== -1) {
         const taskElement = this.tasks[taskIndex].element;
@@ -85,16 +103,25 @@
       }
     }
 
-    update(taskId, currentTitle, currentDescription) {
-      const modal = document.getElementById("task-modal");
-      const titleInput = document.getElementById("task-title");
-      const descInput = document.getElementById("task-desc");
-      const form = document.getElementById("task-form");
-      const submitButton = form.querySelector("button[type='submit']");
+    update(taskId: string, currentTitle: string, currentDescription: string) {
+      const modal = document.getElementById("task-modal") as HTMLDialogElement;
+      const titleInput = document.getElementById(
+        "task-title"
+      ) as HTMLInputElement;
+      const descInput = document.getElementById(
+        "task-desc"
+      ) as HTMLInputElement;
+      const form = document.getElementById("task-form") as HTMLFormElement;
+      const submitButton = form?.querySelector(
+        "button[type='submit']"
+      ) as HTMLButtonElement;
+      const taskStatus = document.getElementById(
+        "task-status"
+      ) as HTMLInputElement;
 
       titleInput.value = currentTitle;
       descInput.value = currentDescription;
-      document.getElementById("task-status").value = this.status;
+      taskStatus.value = this.status;
 
       form.dataset.editingTaskId = taskId;
 
@@ -104,16 +131,35 @@
     }
   }
 
+  interface TaskList {
+    container: HTMLDivElement;
+    status: string;
+    tasks: Tasks[];
+  }
+
+  interface TaskLists {
+    Todo: TaskList;
+    InProgress: TaskList;
+    Done: TaskList;
+  }
+
   class Kanban {
-    constructor(boardId) {
+    board;
+    statuses: string[];
+    taskLists: TaskList;
+    constructor(boardId: string) {
       this.board = document.getElementById(boardId);
-      this.statuses = ["To Do", "In Progress", "Done"];
+      this.statuses = ["ToDo", "InProgress", "Done"];
       this.taskLists = {};
+    }
+
+    getTaskLists() {
+      return this.taskLists;
     }
 
     init() {
       if (!this.board) return;
-
+      this.getTaskLists();
       this.statuses.forEach((status) => {
         const column = document.createElement("div");
         column.classList.add(
@@ -152,7 +198,7 @@
         taskList.classList.add("task-list");
         column.appendChild(taskList);
 
-        this.board.appendChild(column);
+        this.board?.appendChild(column);
         this.taskLists[status] = new TaskList(status, taskList);
       });
 
@@ -160,23 +206,36 @@
     }
 
     setupModal() {
-      const modal = document.getElementById("task-modal");
-      const form = document.getElementById("task-form");
-      const closeModalBtn = document.getElementById("close-modal");
-      const submitButton = form.querySelector("button[type='submit']");
+      const modal = document.getElementById("task-modal") as HTMLDialogElement;
+      const form = document.getElementById("task-form") as HTMLFormElement;
+      const closeModalBtn = document.getElementById(
+        "close-modal"
+      ) as HTMLButtonElement;
+      const submitButton = form.querySelector(
+        "button[type='submit']"
+      ) as HTMLButtonElement;
 
       form.addEventListener("submit", (e) => {
         e.preventDefault();
-        const title = document.getElementById("task-title").value;
-        const description = document.getElementById("task-desc").value;
-        const status = document.getElementById("task-status").value;
+
+        const title = document.getElementById("task-title") as HTMLInputElement;
+        const description = document.getElementById(
+          "task-desc"
+        ) as HTMLInputElement;
+        const status = document.getElementById(
+          "task-status"
+        ) as HTMLInputElement;
+
+        const titleValue = title.value;
+        const descriptionValue = description.value;
+        const statusValue = status.value;
 
         const editingTaskId = form.dataset.editingTaskId;
 
         if (editingTaskId) {
-          this.updateTask(editingTaskId, title, description);
+          this.updateTask(editingTaskId, titleValue, descriptionValue);
         } else {
-          this.addTask(status, title, description);
+          this.addTask(statusValue, titleValue, descriptionValue);
         }
 
         modal.close();
@@ -188,25 +247,32 @@
       closeModalBtn.addEventListener("click", () => modal.close());
     }
 
-    openModal(status) {
-      const modal = document.getElementById("task-modal");
-      document.getElementById("task-status").value = status;
-      const form = document.getElementById("task-form");
-      const submitButton = form.querySelector("button[type='submit']");
+    openModal(status: string) {
+      this.getTaskLists();
+      const modal = document.getElementById("task-modal") as HTMLDialogElement;
+      const taskStatus = document.getElementById(
+        "task-status"
+      ) as HTMLInputElement;
+      taskStatus.value = status;
+      const form = document.getElementById("task-form") as HTMLFormElement;
+      const submitButton = form.querySelector(
+        "button[type='submit']"
+      ) as HTMLButtonElement;
       submitButton.textContent = "Add Task";
       modal.showModal();
     }
 
-    addTask(status, title, description) {
+    addTask(status: string, title: string, description: string) {
       if (this.taskLists[status]) {
         this.taskLists[status].addTask(title, description);
       }
     }
 
-    updateTask(taskId, title, description) {
+    updateTask(taskId: string, title: string, description: string) {
       for (const taskList of Object.values(this.taskLists)) {
-        const task = taskList.tasks.find((task) => task.id === taskId);
+        const task = taskList.tasks.find((task: Tasks) => task.id === taskId);
         if (task) {
+          console.log(task);
           task.title = title;
           task.description = description;
           task.element.querySelector("h2").textContent = title;
