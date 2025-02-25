@@ -4,63 +4,13 @@ import '../styles/global.css'
 <div class="search-container w-full h-full min-h-[20vh] flex justify-center items-center p-8"> 
     <div class="search-bar-box shadow-[0_0_1px] rounded-[10px] overflow-visible h-[28px] relative">
         <form>
-            <input type="text" name="search" placeholder="Search..." autocomplete="off" class="w-[60vw] h-[28px] rounded-[10px] shadow-[0_0_1px] outline-none">
+            <input type="text" name="search" placeholder="Search..." autocomplete="off" class="w-[60vw] h-[28px] rounded-[10px] shadow-[0_0_1px] outline-none p-1">
         </form>
-        <div class="suggestion z-[10] bg-white shadow-[0_0_1px]">
+        <div class="suggestion z-[10] bg-white shadow-[0_0_1px] hidden">
             <ul></ul>
         </div>
     </div>  
 </div>
-
-<!-- <style>
-    .search-container {
-        width: 100%;
-        height: 100%;
-        min-height: 20vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 2rem;
-    }
-
-    .search-bar-box {
-        border: 1px solid transparent;
-        box-shadow: 0px 0px 1px;
-        border-radius: 10px;
-        overflow: visible;
-        height: 28px;
-        position: relative;
-    }
-
-    input {
-        width: 60vw;
-        height: 28px;
-        border-radius: 10px;
-        box-shadow: 0px 0px 1px;
-        outline: none;
-    }
-
-    .focused {
-        border-bottom-left-radius: 0;
-        border-bottom-right-radius: 0;
-    }
-    
-    .suggestion {
-        z-index: 10;
-        background-color: white;
-        width: 100%;
-        box-shadow: 0px 0px 1px;
-    }
-
-    .suggestion ul li {
-        padding: 2px 10px;
-    }
-
-    .hidden {
-        display: none;
-    }
-
-</style> -->
 
 <script>
     const input = document.querySelector('input') as HTMLInputElement
@@ -76,14 +26,22 @@ import '../styles/global.css'
         input.addEventListener('focus', () => {
             isActive = true
             suggestion.classList.remove('hidden')
-            input.classList.add('focused')
-            searchBarBox.classList.add('focused')
+            input.classList.add('rounded-b-none')
+            searchBarBox.classList.add('rounded-b-none')
+            if (isActive) {
+                taskList.forEach((task: string) => {
+                    const listItem = document.createElement('li')
+                    listItem.classList.add('hover:bg-gray-100', 'hover:opacity-80', 'p-1')
+                    listItem.textContent = task
+                    suggestionList.appendChild(listItem)
+                })
+            }
         })
         input.addEventListener('blur', () => {
             isActive = false
             suggestion.classList.add('hidden')
-            input.classList.remove('focused')
-            searchBarBox.classList.remove('focused')
+            input.classList.remove('rounded-b-none')
+            searchBarBox.classList.remove('rounded-b-none')
         })
     }
 
@@ -93,27 +51,53 @@ import '../styles/global.css'
 
     input.addEventListener('input', (e) => {
         const target = e.currentTarget as HTMLInputElement
-        const keywords = target.value.replace(/\s+/g, ' '.trim()).toLowerCase()
+        const keywords = target.value.replace(/\s+/g, '').toLowerCase().split('')
         suggestionList.innerHTML = ''
+
+        input.classList.add('rounded-b-none')
+        searchBarBox.classList.add('rounded-b-none')
+
+        if (keywords.length === 0) {
+            suggestionList.innerHTML = ''
+        }
         
-        let taskFound = false
-
-        taskList.forEach((task: string) => {
-            const oneStringTaks = task.replace(/\s+/g, ' '.trim()).toLowerCase()
-
-            if (oneStringTaks.includes(keywords)) {
-                const listItem = document.createElement('li')
-                listItem.textContent = task
-                suggestionList.appendChild(listItem)
-                taskFound = true
-            }
+        let taskFound = taskList.filter(task => {
+            const taskChars = task.replace(/\s+/g, '').toLowerCase().split('')
+            return keywords.every(char => {
+                const index = taskChars.indexOf(char)
+                if (index !== -1) {
+                    taskChars.splice(index, 1)
+                    return true
+                } else {
+                    return false
+                }
+            })
         })
 
-        if (taskFound === false) {
+        if (taskFound.length > 0) {
+            taskFound.forEach((task: string) => {
+                const listItem = document.createElement('li')
+                listItem.classList.add('hover:bg-gray-100', 'hover:opacity-80', 'p-1')
+                listItem.textContent = task
+                suggestionList.appendChild(listItem)
+            })
+        } else {
             const listItem = document.createElement('li')
+            listItem.classList.add('p-1')
             listItem.textContent = 'No results found'
             suggestionList.appendChild(listItem)
         }
     })
+
+    // ------------------------------- open modal function -----------------------------------
+
+    const taskForModal = document.querySelectorAll('.suggestion ul li') as NodeListOf<HTMLLIElement>
+    
+    taskForModal.forEach((task) => {
+        task.addEventListener('click', () => {
+            
+        })
+    })
+
     
 </script>
