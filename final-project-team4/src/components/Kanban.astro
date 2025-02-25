@@ -98,8 +98,7 @@
       const taskIndex = this.tasks.findIndex((task) => task.id === taskId);
       if (taskIndex !== -1) {
         const taskElement = this.tasks[taskIndex].element;
-        this.container.removeChild(taskElement);
-        this.tasks.splice(taskIndex, 1);
+        taskElement.remove();
       }
     }
 
