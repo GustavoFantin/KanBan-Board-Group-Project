@@ -53,13 +53,7 @@
       const taskId = `task-${Date.now()}`;
 
       const taskElement = document.createElement("div");
-      taskElement.classList.add(
-        "bg-white",
-        "rounded-lg",
-        "p-3",
-        "shadow-md",
-        "mb-3"
-      );
+      taskElement.classList.add("bg-white", "rounded-lg", "p-3", "shadow-md");
       taskElement.setAttribute("data-id", taskId);
       taskElement.setAttribute("id", taskId);
       taskElement.setAttribute("draggable", "true");
@@ -200,7 +194,13 @@
         const taskList = document.createElement("div");
         taskList.setAttribute("ondrop", "drop(event)");
         taskList.setAttribute("ondragover", "allowDrop(event)");
-        taskList.classList.add("task-list", "h-full");
+        taskList.classList.add(
+          "task-list",
+          "h-full",
+          "flex",
+          "flex-col",
+          "gap-6"
+        );
         column.appendChild(taskList);
 
         this.board?.appendChild(column);
@@ -301,6 +301,7 @@
 
   function drag(ev) {
     ev.dataTransfer.setData("text", ev.target.id);
+    ev.dataTransfer.dropEffect = "move";
   }
 
   function drop(ev) {
