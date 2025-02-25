@@ -1,0 +1,290 @@
+<div id="kanban-board" class="flex gap-4 p-4 w-full"></div>
+<dialog id="task-modal" class="bg-white p-6 rounded-md shadow-lg w-1/3">
+  <h2 class="text-lg font-bold mb-2">Add Task</h2>
+  <form id="task-form" class="flex flex-col gap-2">
+    <input
+      id="task-title"
+      type="text"
+      placeholder="Title"
+      required
+      class="border p-2 rounded"
+    />
+    <input
+      id="task-desc"
+      placeholder="Description"
+      required
+      class="border p-2 rounded"
+    />
+    <input type="hidden" id="task-status" />
+    <button
+      type="submit"
+      class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+      >Add Task</button
+    >
+    <button type="button" id="close-modal" class="text-red-500">Cancel</button>
+  </form>
+</dialog>
+
+<script>
+  interface Tasks {
+    description: string;
+    element: HTMLDivElement;
+    id: string;
+    title: string;
+  }
+  class TaskList {
+    status: string;
+    tasks: Tasks[];
+    container: HTMLDivElement;
+    constructor(status: string, container: HTMLDivElement) {
+      this.status = status;
+      this.tasks = [];
+      this.container = container;
+    }
+
+    getTasks() {
+      return this.tasks;
+    }
+
+    addTask(title: string, description: string) {
+      this.getTasks();
+      if (!title.trim()) return;
+
+      const taskId = `task-${Date.now()}`;
+
+      const taskElement = document.createElement("div");
+      taskElement.classList.add(
+        "bg-white",
+        "rounded-lg",
+        "p-3",
+        "shadow-md",
+        "mb-3"
+      );
+      taskElement.setAttribute("data-id", taskId);
+
+      taskElement.innerHTML = `
+      <div class="flex justify-between text-sm">
+        <span>${this.status}</span>
+        <span>--</span>
+      </div>
+      <h2 class="font-semibold text-lg">${title}</h2>
+      <p class="text-sm text-gray-600">${description}</p>
+      <div class="flex gap-2 mt-2">
+        <span class="text-white w-10 h-10 bg-amber-500 rounded-full border-2 border-white text-center">U</span>
+        <span class="text-white w-10 h-10 bg-blue-500 rounded-full border-2 border-white text-center">U</span>
+      </div>
+      <button class="text-red-500 mt-2" style="font-size: 14px;">Delete</button>
+      <button class="text-blue-500 mt-2 ml-2" style="font-size: 14px;">Edit</button>
+    `;
+
+      const deleteButton = taskElement.querySelector(
+        "button.text-red-500"
+      ) as HTMLButtonElement;
+      deleteButton.addEventListener("click", () => this.remove(taskId));
+
+      const editButton = taskElement.querySelector(
+        "button.text-blue-500"
+      ) as HTMLButtonElement;
+      editButton.addEventListener("click", () =>
+        this.update(taskId, title, description)
+      );
+
+      this.tasks.push({ id: taskId, title, description, element: taskElement });
+
+      this.container.appendChild(taskElement);
+    }
+
+    remove(taskId: string) {
+      const taskIndex = this.tasks.findIndex((task) => task.id === taskId);
+      if (taskIndex !== -1) {
+        const taskElement = this.tasks[taskIndex].element;
+        this.container.removeChild(taskElement);
+        this.tasks.splice(taskIndex, 1);
+      }
+    }
+
+    update(taskId: string, currentTitle: string, currentDescription: string) {
+      const modal = document.getElementById("task-modal") as HTMLDialogElement;
+      const titleInput = document.getElementById(
+        "task-title"
+      ) as HTMLInputElement;
+      const descInput = document.getElementById(
+        "task-desc"
+      ) as HTMLInputElement;
+      const form = document.getElementById("task-form") as HTMLFormElement;
+      const submitButton = form?.querySelector(
+        "button[type='submit']"
+      ) as HTMLButtonElement;
+      const taskStatus = document.getElementById(
+        "task-status"
+      ) as HTMLInputElement;
+
+      titleInput.value = currentTitle;
+      descInput.value = currentDescription;
+      taskStatus.value = this.status;
+
+      form.dataset.editingTaskId = taskId;
+
+      submitButton.textContent = "Update Task";
+
+      modal.showModal();
+    }
+  }
+
+  interface TaskList {
+    container: HTMLDivElement;
+    status: string;
+    tasks: Tasks[];
+  }
+
+  interface TaskLists {
+    Todo: TaskList;
+    InProgress: TaskList;
+    Done: TaskList;
+  }
+
+  class Kanban {
+    board;
+    statuses: string[];
+    taskLists: TaskList;
+    constructor(boardId: string) {
+      this.board = document.getElementById(boardId);
+      this.statuses = ["ToDo", "InProgress", "Done"];
+      this.taskLists = {};
+    }
+
+    getTaskLists() {
+      return this.taskLists;
+    }
+
+    init() {
+      if (!this.board) return;
+      this.getTaskLists();
+      this.statuses.forEach((status) => {
+        const column = document.createElement("div");
+        column.classList.add(
+          "kanban-column",
+          "bg-gray-200",
+          "p-4",
+          "rounded-md",
+          "w-1/3"
+        );
+        column.setAttribute("data-status", status);
+
+        const header = document.createElement("div");
+        header.classList.add("flex", "justify-between", "items-center", "mb-2");
+
+        const title = document.createElement("h2");
+        title.classList.add("text-xl", "font-bold");
+        title.textContent = status;
+
+        const addButton = document.createElement("button");
+        addButton.classList.add(
+          "bg-blue-500",
+          "text-white",
+          "px-2",
+          "py-1",
+          "rounded",
+          "hover:bg-blue-600"
+        );
+        addButton.textContent = "+";
+        addButton.addEventListener("click", () => this.openModal(status));
+
+        header.appendChild(title);
+        header.appendChild(addButton);
+        column.appendChild(header);
+
+        const taskList = document.createElement("div");
+        taskList.classList.add("task-list");
+        column.appendChild(taskList);
+
+        this.board?.appendChild(column);
+        this.taskLists[status] = new TaskList(status, taskList);
+      });
+
+      this.setupModal();
+    }
+
+    setupModal() {
+      const modal = document.getElementById("task-modal") as HTMLDialogElement;
+      const form = document.getElementById("task-form") as HTMLFormElement;
+      const closeModalBtn = document.getElementById(
+        "close-modal"
+      ) as HTMLButtonElement;
+      const submitButton = form.querySelector(
+        "button[type='submit']"
+      ) as HTMLButtonElement;
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const title = document.getElementById("task-title") as HTMLInputElement;
+        const description = document.getElementById(
+          "task-desc"
+        ) as HTMLInputElement;
+        const status = document.getElementById(
+          "task-status"
+        ) as HTMLInputElement;
+
+        const titleValue = title.value;
+        const descriptionValue = description.value;
+        const statusValue = status.value;
+
+        const editingTaskId = form.dataset.editingTaskId;
+
+        if (editingTaskId) {
+          this.updateTask(editingTaskId, titleValue, descriptionValue);
+        } else {
+          this.addTask(statusValue, titleValue, descriptionValue);
+        }
+
+        modal.close();
+        form.reset();
+        delete form.dataset.editingTaskId;
+        submitButton.textContent = "Add Task";
+      });
+
+      closeModalBtn.addEventListener("click", () => modal.close());
+    }
+
+    openModal(status: string) {
+      this.getTaskLists();
+      const modal = document.getElementById("task-modal") as HTMLDialogElement;
+      const taskStatus = document.getElementById(
+        "task-status"
+      ) as HTMLInputElement;
+      taskStatus.value = status;
+      const form = document.getElementById("task-form") as HTMLFormElement;
+      const submitButton = form.querySelector(
+        "button[type='submit']"
+      ) as HTMLButtonElement;
+      submitButton.textContent = "Add Task";
+      modal.showModal();
+    }
+
+    addTask(status: string, title: string, description: string) {
+      if (this.taskLists[status]) {
+        this.taskLists[status].addTask(title, description);
+      }
+    }
+
+    updateTask(taskId: string, title: string, description: string) {
+      for (const taskList of Object.values(this.taskLists)) {
+        const task = taskList.tasks.find((task: Tasks) => task.id === taskId);
+        if (task) {
+          console.log(task);
+          task.title = title;
+          task.description = description;
+          task.element.querySelector("h2").textContent = title;
+          task.element.querySelector("p").textContent = description;
+          break;
+        }
+      }
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const kanban = new Kanban("kanban-board");
+    kanban.init();
+  });
+</script>
