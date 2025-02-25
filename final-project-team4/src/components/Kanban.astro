@@ -275,8 +275,10 @@
           console.log(task);
           task.title = title;
           task.description = description;
-          task.element.querySelector("h2").textContent = title;
-          task.element.querySelector("p").textContent = description;
+          const titleElement = task.element.querySelector("h2");
+          const descriptionElement = task.element.querySelector("p");
+          if (titleElement) titleElement.textContent = title;
+          if (descriptionElement) descriptionElement.textContent = description;
           break;
         }
       }
