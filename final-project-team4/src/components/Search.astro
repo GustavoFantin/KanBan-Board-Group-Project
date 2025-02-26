@@ -1,0 +1,216 @@
+---
+import '../styles/global.css'
+---
+<div class="search-container w-full h-full min-h-[20vh] flex justify-center items-center p-8"> 
+    <div class="search-bar-box shadow-[0_0_1px] rounded-[10px] overflow-visible h-[28px] relative">
+        <form>
+            <input type="text" name="search" placeholder="Search..." autocomplete="off" class="w-[60vw] h-[28px] rounded-[10px] shadow-[0_0_1px] outline-none p-1">
+        </form>
+        <div class="suggestion z-[10] bg-white shadow-[0_0_1px] hidden">
+            <ul></ul>
+        </div>
+    </div>  
+</div>
+
+<script>
+
+    const input = document.querySelector('input') as HTMLInputElement
+    const suggestion = document.querySelector('.suggestion') as HTMLDivElement
+    const suggestionList = document.querySelector('.suggestion ul') as HTMLUListElement
+    const searchBarBox = document.querySelector('.search-bar-box') as HTMLDivElement
+
+    interface Task {
+        id: string
+        title: string
+        description: string
+        column: string
+    }
+
+    const savedTasks = localStorage.getItem('kanban-tasks')
+
+    let tasks = []
+    if (savedTasks) {
+        tasks = JSON.parse(savedTasks)
+    }
+    console.log(savedTasks)
+    console.log(tasks)
+
+    // ------------------- function for suggestion to appear and disappear ------------------------
+
+    let isActive = false
+    
+    if (input) {
+        input.addEventListener('focus', () => {
+            isActive = true
+            suggestion.classList.remove('hidden')
+            input.classList.add('rounded-b-none')
+            searchBarBox.classList.add('rounded-b-none')
+            if (isActive) {
+                suggestionList.innerHTML = ''
+                tasks.forEach((task: Task) => {
+                    const taskTitle = task.title
+                    const listItem = document.createElement('li')
+                    listItem.classList.add('hover:bg-gray-100', 'hover:opacity-80', 'p-1')
+                    listItem.textContent = taskTitle
+                    suggestionList.appendChild(listItem)
+                })
+            }
+        })
+
+        suggestionList.addEventListener('mousedown', (e: MouseEvent) => {
+            e.preventDefault()
+        })
+
+        input.addEventListener('blur', () => {
+            setTimeout(() => {
+                isActive = false
+                suggestion.classList.add('hidden')
+                input.classList.remove('rounded-b-none')
+                searchBarBox.classList.remove('rounded-b-none')
+            }, 100);
+        })
+    }
+
+    // ----------------------- dynamic suggestion change based on the keyword ------------------------
+
+    
+    // const taskList = ['wash dish', 'go to school', 'prepare lunch', 'sing a song', 'write a letter', 'walk dog', 'wash car', 'take a nap', 'read a book', 'watch a movie', 'drink water', 'open a SNS', 'make an app', 'go outside', 'push up', 'running', 'do something good']
+
+    input.addEventListener('input', (e: Event) => {
+        const inputEvent = e as InputEvent
+        const target = inputEvent.currentTarget as HTMLInputElement
+        const keywords = target.value.replace(/\s+/g, '').toLowerCase().split('')
+        suggestionList.innerHTML = ''
+
+        input.classList.add('rounded-b-none')
+        searchBarBox.classList.add('rounded-b-none')
+
+        if (keywords.length === 0) {
+            suggestionList.innerHTML = ''
+        }
+        
+        let taskFound = tasks.filter((task: Task) => {
+            const taskTitle = task.title
+            const taskChars = taskTitle.replace(/\s+/g, '').toLowerCase().split('')
+            return keywords.every(char => {
+                const index = taskChars.indexOf(char)
+                if (index !== -1) {
+                    taskChars.splice(index, 1)
+                    return true
+                } else {
+                    return false
+                }
+            })
+        })
+
+        console.log(taskFound)
+
+        if (taskFound.length > 0) {
+            taskFound.forEach((task: Task) => {
+                const taskTitle = task.title
+                const listItem = document.createElement('li')
+                listItem.classList.add('hover:bg-gray-100', 'hover:opacity-80', 'p-1', 'cursor-pointer')
+                listItem.textContent = taskTitle
+                suggestionList.appendChild(listItem)
+            })
+        } else {
+            const listItem = document.createElement('li')
+            listItem.classList.add('p-1')
+            listItem.textContent = 'No results found'
+            suggestionList.appendChild(listItem)
+        }
+
+    })
+
+     // ------------------------------- open modal function -----------------------------------
+
+    suggestionList.addEventListener('click', (e: MouseEvent) => {
+        const target = e.target as HTMLLIElement
+        console.log(target)
+
+        if (target && target.tagName === 'LI' && target.textContent !== 'No results found') {
+            console.log('button clicked')
+
+            const modalClose = document.createElement('div')
+            const closeIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+            const iconPath = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+
+            iconPath.setAttribute('d', 'M376.6 84.5c11.3-13.6 9.5-33.8-4.1-45.1s-33.8-9.5-45.1 4.1L192 206 56.6 43.5C45.3 29.9 25.1 28.1 11.5 39.4S-3.9 70.9 7.4 84.5L150.3 256 7.4 427.5c-11.3 13.6-9.5 33.8 4.1 45.1s33.8 9.5 45.1-4.1L192 306 327.4 468.5c11.3 13.6 31.5 15.4 45.1 4.1s15.4-31.5 4.1-45.1L233.7 256 376.6 84.5z')
+
+            closeIcon.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+            closeIcon.setAttribute('viewBox', '0 0 384 512')
+            closeIcon.appendChild(iconPath)
+            closeIcon.classList.add('w-[26px]', 'h-[26px]')
+            modalClose.appendChild(closeIcon)
+
+            const overlay = document.createElement('div')
+            const modalContainer = document.createElement('div')
+            const modalLeft = document.createElement('div')
+            const modalRight = document.createElement('div')
+            const modalTop = document.createElement('div')
+            const modalBottom = document.createElement('div')
+            const modalTitle = document.createElement('h1')
+            const descHead = document.createElement('h2')
+            const modalDesc = document.createElement('p')
+            const modalAssigned = document.createElement('ul')
+            const statusHead = document.createElement('p')
+            const modalColumn = document.createElement('p')
+            const modalId = document.createElement('p')
+            const assignHead = document.createElement('h2')
+            
+            overlay.classList.add('overlay', 'w-screen', 'h-screen', 'fixed', 'top-0', 'left-0', 'flex', 'justify-center', 'items-center')
+            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'
+            modalContainer.classList.add('modal-container', 'w-[80vw]', 'h-[80vh]', 'bg-white', 'bg-opacity-100', 'relative', 'rounded-[10px]', 'p-3')
+            modalTop.classList.add('w-full', 'p-2', 'flex')
+            modalBottom.classList.add('w-full', 'flex')
+            modalLeft.classList.add('modal-left', 'w-full', 'p-2')
+            modalRight.classList.add('modal-right', 'w-[30%]', 'p-2')
+            modalClose.classList.add('w-fit', 'h-fit', 'p-1', 'hover:bg-gray-100', 'absolute', 'top-0', 'right-0', 'rounded-tr-[10px]')
+            modalTitle.classList.add('w-full', 'text-xl', 'font-bold')
+            modalId.classList.add('w-full')
+            modalColumn.classList.add('w-full')
+            assignHead.classList.add('w-full', 'font-semibold')
+            descHead.classList.add('font-semibold')
+
+            tasks.forEach((task: Task) => {
+                if (task.title === target.textContent) {
+                    modalTitle.textContent = task.title
+                    modalId.textContent = `ID: ${task.id}`
+                    modalDesc.textContent = task.description
+                    modalColumn.textContent = `Status: ${task.column}`
+                }
+            })
+
+            descHead.textContent = 'Description'
+            assignHead.textContent = 'Assignees'
+
+            // tasks.forEach((task: Task) => {
+                
+            // })
+
+            modalTop.appendChild(modalTitle)
+            modalTop.appendChild(modalId)
+            modalTop.appendChild(modalColumn)
+            modalLeft.appendChild(descHead)
+            modalLeft.appendChild(modalDesc)
+            modalRight.appendChild(assignHead)
+            modalRight.appendChild(modalAssigned)
+            modalBottom.appendChild(modalLeft)
+            modalBottom.appendChild(modalRight)
+            modalContainer.appendChild(modalTop)
+            modalContainer.appendChild(modalBottom)
+            modalContainer.appendChild(modalClose)
+            overlay.appendChild(modalContainer)
+
+            document.body.appendChild(overlay)
+
+            modalClose.addEventListener('click', () => {
+                const overlay = document.querySelector('.overlay') as HTMLDivElement
+                if(overlay) {
+                    overlay.remove()
+                }
+            })
+        }
+    })
+    
+</script>
