@@ -29,6 +29,7 @@ import '../styles/global.css'
             input.classList.add('rounded-b-none')
             searchBarBox.classList.add('rounded-b-none')
             if (isActive) {
+                suggestionList.innerHTML = ''
                 taskList.forEach((task: string) => {
                     const listItem = document.createElement('li')
                     listItem.classList.add('hover:bg-gray-100', 'hover:opacity-80', 'p-1')
@@ -37,11 +38,18 @@ import '../styles/global.css'
                 })
             }
         })
+
+        suggestionList.addEventListener('mousedown', (e: MouseEvent) => {
+            e.preventDefault()
+        })
+
         input.addEventListener('blur', () => {
-            isActive = false
-            suggestion.classList.add('hidden')
-            input.classList.remove('rounded-b-none')
-            searchBarBox.classList.remove('rounded-b-none')
+            setTimeout(() => {
+                isActive = false
+                suggestion.classList.add('hidden')
+                input.classList.remove('rounded-b-none')
+                searchBarBox.classList.remove('rounded-b-none')
+            }, 100);
         })
     }
 
@@ -88,12 +96,17 @@ import '../styles/global.css'
             suggestionList.appendChild(listItem)
         }
 
-        // ------------------------------- open modal function -----------------------------------
+    })
 
-        const taskForModal = document.querySelectorAll('.suggestion ul li') as NodeListOf<HTMLLIElement>
-        console.log(taskForModal)
-        
-        taskForModal.forEach((task) => {
+     // ------------------------------- open modal function -----------------------------------
+
+    suggestionList.addEventListener('click', (e: MouseEvent) => {
+        const target = e.target as HTMLLIElement
+        console.log(target)
+
+        if (target && target.tagName === 'LI' && target.textContent !== 'No results found') {
+            console.log('button clicked')
+
             const modalClose = document.createElement('div')
             const closeIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
             const iconPath = document.createElementNS('http://www.w3.org/2000/svg', 'path')
@@ -103,38 +116,44 @@ import '../styles/global.css'
             closeIcon.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
             closeIcon.setAttribute('viewBox', '0 0 384 512')
             closeIcon.appendChild(iconPath)
+            closeIcon.classList.add('w-[26px]', 'h-[26px]')
             modalClose.appendChild(closeIcon)
 
-            task.addEventListener('click', () => {
-                console.log('button clicked')
+            const overlay = document.createElement('div')
+            const modalContainer = document.createElement('div')
+            const modalLeft = document.createElement('div')
+            const modalRight = document.createElement('div')
+            const modalTop = document.createElement('div')
+            const modalBottom = document.createElement('div')
+            const modalTitle = document.createElement('h1')
+            const modalDesc = document.createElement('p')
+            const modalAssigned = document.createElement('div')
+            
+            overlay.classList.add('overlay', 'w-screen', 'h-screen', 'fixed', 'top-0', 'left-0', 'flex', 'justify-center', 'items-center')
+            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'
+            modalContainer.classList.add('modal-container', 'w-[80vw]', 'h-[80vh]', 'bg-white', 'bg-opacity-100', 'relative', 'rounded-[10px]')
+            modalTop.classList.add('w-full', 'p-2')
+            modalBottom.classList.add('w-full', 'flex')
+            modalLeft.classList.add('modal-left', 'w-full', 'p-2')
+            modalRight.classList.add('modal-right', 'w-[30%]', 'p-2')
+            modalClose.classList.add('w-fit', 'h-fit', 'p-1', 'hover:bg-gray-100', 'absolute', 'top-0', 'right-0', 'rounded-tr-[10px]')
+            modalTitle.classList.add('w-full', 'text-xl', 'font-bold')
 
-                const overlay = document.createElement('div')
-                const modalContainer = document.createElement('div')
-                const modalLeft = document.createElement('div')
-                const modalRight = document.createElement('div')
-                const modalTitle = document.createElement('div')
-                const modalDesc = document.createElement('p')
-                const modalAssigned = document.createElement('div')
-                
-                overlay.classList.add('overlay', 'w-screen', 'h-screen', 'fixed', 'top-0', 'left-0', 'flex', 'justify-center', 'items-center', 'bg-black', 'opacity-70')
-                modalContainer.classList.add('modal-container', 'w-[80vw]', 'h-[80vh]', 'flex')
-                modalLeft.classList.add('modal-left', 'w-full')
-                modalRight.classList.add('modal-right', 'w-full')
+            modalTitle.textContent = target.textContent
+            modalDesc.textContent = 'this is a sample task description.'
+            modalAssigned.textContent = 'John Doe'
 
-                modalTitle.innerHTML = `<h1>${task.textContent}</h1>`
-                modalDesc.textContent = 'this is a sample task description.'
-                modalAssigned.textContent = 'John Doe'
+            modalTop.appendChild(modalTitle)
+            modalLeft.appendChild(modalDesc)
+            modalRight.appendChild(modalAssigned)
+            modalBottom.appendChild(modalLeft)
+            modalBottom.appendChild(modalRight)
+            modalContainer.appendChild(modalTop)
+            modalContainer.appendChild(modalBottom)
+            modalContainer.appendChild(modalClose)
+            overlay.appendChild(modalContainer)
 
-                modalLeft.appendChild(modalTitle)
-                modalLeft.appendChild(modalDesc)
-                modalRight.appendChild(modalAssigned)
-                modalContainer.appendChild(modalLeft)
-                modalContainer.appendChild(modalRight)
-                modalContainer.appendChild(modalClose)
-                overlay.appendChild(modalContainer)
-
-                document.body.appendChild(overlay)
-            })
+            document.body.appendChild(overlay)
 
             modalClose.addEventListener('click', () => {
                 const overlay = document.querySelector('.overlay') as HTMLDivElement
@@ -142,11 +161,7 @@ import '../styles/global.css'
                     overlay.remove()
                 }
             })
-
-        })
+        }
     })
-
-    
-
     
 </script>
