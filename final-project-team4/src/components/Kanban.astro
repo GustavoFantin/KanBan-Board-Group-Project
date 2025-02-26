@@ -38,12 +38,55 @@
     container: HTMLDivElement;
     constructor(status: string, container: HTMLDivElement) {
       this.status = status;
-      this.tasks = [];
+      this.tasks = JSON.parse(localStorage.getItem("tasks")) || [];
       this.container = container;
+
+      this.renderTasks();
     }
 
     getTasks() {
       return this.tasks;
+    }
+
+    saveTasks() {
+      localStorage.setItem("tasks", JSON.stringify(this.tasks));
+    }
+
+    renderTasks() {
+      this.container.innerHTML = ""; // Limpiar el contenedor antes de renderizar
+
+      this.tasks.forEach((task) => {
+        const taskElement = document.createElement("div");
+        taskElement.classList.add(
+          "bg-white",
+          "rounded-lg",
+          "p-3",
+          "shadow-md",
+          "mb-3"
+        );
+        taskElement.setAttribute("data-id", task.id);
+
+        taskElement.innerHTML = `
+      <div class="flex justify-between text-sm">
+        <span>${this.status}</span>
+        <span>--</span>
+      </div>
+      <h2 class="font-semibold text-lg">${task.title}</h2>
+      <p class="text-sm text-gray-600">${task.description}</p>
+      <button class="text-red-500 mt-2" style="font-size: 14px;">Delete</button>
+      <button class="text-blue-500 mt-2 ml-2" style="font-size: 14px;">Edit</button>
+    `;
+
+        const deleteButton = taskElement.querySelector("button.text-red-500");
+        deleteButton.addEventListener("click", () => this.remove(task.id));
+
+        const editButton = taskElement.querySelector("button.text-blue-500");
+        editButton.addEventListener("click", () =>
+          this.update(task.id, task.title, task.description)
+        );
+
+        this.container.appendChild(taskElement);
+      });
     }
 
     addTask(title: string, description: string) {
@@ -93,6 +136,8 @@
       );
 
       this.tasks.push({ id: taskId, title, description, element: taskElement });
+      this.saveTasks();
+      this.renderTasks();
 
       this.container.appendChild(taskElement);
     }
@@ -101,8 +146,9 @@
       const taskIndex = this.tasks.findIndex((task) => task.id === taskId);
       if (taskIndex !== -1) {
         const taskElement = this.tasks[taskIndex].element;
-        this.container.removeChild(taskElement);
-        this.tasks.splice(taskIndex, 1);
+        taskElement.remove();
+        this.saveTasks();
+        this.renderTasks();
       }
     }
 
@@ -129,6 +175,8 @@
       form.dataset.editingTaskId = taskId;
 
       submitButton.textContent = "Update Task";
+      this.saveTasks();
+      this.renderTasks();
 
       modal.showModal();
     }
@@ -149,7 +197,7 @@
   class Kanban {
     board;
     statuses: string[];
-    taskLists: TaskList;
+    taskLists: { [key: string]: TaskList };
     constructor(boardId: string) {
       this.board = document.getElementById(boardId);
       this.statuses = ["ToDo", "InProgress", "Done"];
@@ -286,8 +334,10 @@
           console.log(task);
           task.title = title;
           task.description = description;
-          task.element.querySelector("h2").textContent = title;
-          task.element.querySelector("p").textContent = description;
+          const titleElement = task.element.querySelector("h2");
+          const descriptionElement = task.element.querySelector("p");
+          if (titleElement) titleElement.textContent = title;
+          if (descriptionElement) descriptionElement.textContent = description;
           break;
         }
       }
