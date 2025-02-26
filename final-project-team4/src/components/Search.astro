@@ -13,10 +13,27 @@ import '../styles/global.css'
 </div>
 
 <script>
+
     const input = document.querySelector('input') as HTMLInputElement
     const suggestion = document.querySelector('.suggestion') as HTMLDivElement
     const suggestionList = document.querySelector('.suggestion ul') as HTMLUListElement
     const searchBarBox = document.querySelector('.search-bar-box') as HTMLDivElement
+
+    interface Task {
+        id: string
+        title: string
+        description: string
+        column: string
+    }
+
+    const savedTasks = localStorage.getItem('kanban-tasks')
+
+    let tasks = []
+    if (savedTasks) {
+        tasks = JSON.parse(savedTasks)
+    }
+    console.log(savedTasks)
+    console.log(tasks)
 
     // ------------------- function for suggestion to appear and disappear ------------------------
 
@@ -30,10 +47,11 @@ import '../styles/global.css'
             searchBarBox.classList.add('rounded-b-none')
             if (isActive) {
                 suggestionList.innerHTML = ''
-                taskList.forEach((task: string) => {
+                tasks.forEach((task: Task) => {
+                    const taskTitle = task.title
                     const listItem = document.createElement('li')
                     listItem.classList.add('hover:bg-gray-100', 'hover:opacity-80', 'p-1')
-                    listItem.textContent = task
+                    listItem.textContent = taskTitle
                     suggestionList.appendChild(listItem)
                 })
             }
@@ -55,10 +73,12 @@ import '../styles/global.css'
 
     // ----------------------- dynamic suggestion change based on the keyword ------------------------
 
-    const taskList = ['wash dish', 'go to school', 'prepare lunch', 'sing a song', 'write a letter', 'walk dog', 'wash car', 'take a nap', 'read a book', 'watch a movie', 'drink water', 'open a SNS', 'make an app', 'go outside', 'push up', 'running', 'do something good']
+    
+    // const taskList = ['wash dish', 'go to school', 'prepare lunch', 'sing a song', 'write a letter', 'walk dog', 'wash car', 'take a nap', 'read a book', 'watch a movie', 'drink water', 'open a SNS', 'make an app', 'go outside', 'push up', 'running', 'do something good']
 
-    input.addEventListener('input', (e) => {
-        const target = e.currentTarget as HTMLInputElement
+    input.addEventListener('input', (e: Event) => {
+        const inputEvent = e as InputEvent
+        const target = inputEvent.currentTarget as HTMLInputElement
         const keywords = target.value.replace(/\s+/g, '').toLowerCase().split('')
         suggestionList.innerHTML = ''
 
@@ -69,8 +89,9 @@ import '../styles/global.css'
             suggestionList.innerHTML = ''
         }
         
-        let taskFound = taskList.filter(task => {
-            const taskChars = task.replace(/\s+/g, '').toLowerCase().split('')
+        let taskFound = tasks.filter((task: Task) => {
+            const taskTitle = task.title
+            const taskChars = taskTitle.replace(/\s+/g, '').toLowerCase().split('')
             return keywords.every(char => {
                 const index = taskChars.indexOf(char)
                 if (index !== -1) {
@@ -82,11 +103,14 @@ import '../styles/global.css'
             })
         })
 
+        console.log(taskFound)
+
         if (taskFound.length > 0) {
-            taskFound.forEach((task: string) => {
+            taskFound.forEach((task: Task) => {
+                const taskTitle = task.title
                 const listItem = document.createElement('li')
                 listItem.classList.add('hover:bg-gray-100', 'hover:opacity-80', 'p-1', 'cursor-pointer')
-                listItem.textContent = task
+                listItem.textContent = taskTitle
                 suggestionList.appendChild(listItem)
             })
         } else {
@@ -126,25 +150,46 @@ import '../styles/global.css'
             const modalTop = document.createElement('div')
             const modalBottom = document.createElement('div')
             const modalTitle = document.createElement('h1')
+            const descHead = document.createElement('h2')
             const modalDesc = document.createElement('p')
-            const modalAssigned = document.createElement('div')
+            const modalAssigned = document.createElement('ul')
+            const modalColumn = document.createElement('p')
+            const modalId = document.createElement('p')
+            const assignHead = document.createElement('h2')
             
             overlay.classList.add('overlay', 'w-screen', 'h-screen', 'fixed', 'top-0', 'left-0', 'flex', 'justify-center', 'items-center')
             overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'
             modalContainer.classList.add('modal-container', 'w-[80vw]', 'h-[80vh]', 'bg-white', 'bg-opacity-100', 'relative', 'rounded-[10px]')
-            modalTop.classList.add('w-full', 'p-2')
+            modalTop.classList.add('w-full', 'p-2', 'flex')
             modalBottom.classList.add('w-full', 'flex')
             modalLeft.classList.add('modal-left', 'w-full', 'p-2')
             modalRight.classList.add('modal-right', 'w-[30%]', 'p-2')
             modalClose.classList.add('w-fit', 'h-fit', 'p-1', 'hover:bg-gray-100', 'absolute', 'top-0', 'right-0', 'rounded-tr-[10px]')
             modalTitle.classList.add('w-full', 'text-xl', 'font-bold')
+            modalId.classList.add('w-full')
+            assignHead.classList.add('w-full')
 
-            modalTitle.textContent = target.textContent
-            modalDesc.textContent = 'this is a sample task description.'
-            modalAssigned.textContent = 'John Doe'
+            tasks.forEach((task: Task) => {
+                if (task.title === target.textContent) {
+                    modalTitle.textContent = task.title
+                    modalId.textContent = `ID: ${task.id}`
+                    modalDesc.textContent = task.description
+                    modalColumn.textContent = task.column
+                }
+            })
+
+            descHead.textContent = 'Description'
+            assignHead.textContent = 'Assignees'
+
+            // tasks.forEach((task: Task) => {
+                
+            // })
 
             modalTop.appendChild(modalTitle)
+            modalTop.appendChild(modalId)
+            modalLeft.appendChild(descHead)
             modalLeft.appendChild(modalDesc)
+            modalRight.appendChild(assignHead)
             modalRight.appendChild(modalAssigned)
             modalBottom.appendChild(modalLeft)
             modalBottom.appendChild(modalRight)
