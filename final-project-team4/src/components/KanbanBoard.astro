@@ -102,7 +102,9 @@
           div.appendChild(headerContainer);
 
           const taskList = document.createElement("div");
-          taskList.classList.add("task-list", "mt-4");
+          taskList.setAttribute("ondrop", "drop(event)");
+          taskList.setAttribute("ondragover", "dragOver (event)");
+          taskList.classList.add("task-list", "mt-4", "h-full");
           div.appendChild(taskList);
 
           this.target?.appendChild(div);
@@ -201,12 +203,17 @@
 
       const taskElement = document.createElement("div");
       taskElement.setAttribute("data-id", taskId);
+      taskElement.setAttribute("id", task.id);
+      taskElement.setAttribute("column", columnName);
+      taskElement.setAttribute("draggable", "true");
+      taskElement.setAttribute("ondragstart", "drag(event)");
       taskElement.classList.add(
         "bg-white",
         "rounded-lg",
         "p-3",
         "shadow-md",
-        "mb-3"
+        "mb-3",
+        "taskElement"
       );
       taskElement.innerHTML = `
     <h3 class="task-title font-semibold text-lg">${title}</h3>
@@ -304,8 +311,11 @@
             "rounded-lg",
             "p-3",
             "shadow-md",
-            "mb-3"
+            "mb-3",
+            "taskElement"
           );
+          taskElement.setAttribute("data-id", task.id);
+          taskElement.setAttribute("id", task.id);
           taskElement.innerHTML = `
         <h3 class="task-title font-semibold text-lg">${task.title}</h3>
         <p class="task-desc text-sm text-gray-600">${task.description}</p>
@@ -338,4 +348,87 @@
 
   const kanban = new Kanban();
   kanban.loadTasksFromLocalStorage();
+</script>
+
+<script is:inline>
+  function drag(ev) {
+    ev.dataTransfer.setData("text/plain", ev.target.id);
+
+    draggedItem = ev.target;
+    dx = ev.clientX - draggedItem.getBoundingClientRect().x;
+    dy = ev.clientY - draggedItem.getBoundingClientRect().y;
+    draggedItem.style.position = "absolute";
+  }
+
+  function dragOver(ev) {
+    ev.preventDefault();
+
+    draggedItem.style.display = "none";
+    draggedItem.style.left = ev.clientX - dx;
+    draggedItem.style.top = ev.clientY - dy;
+  }
+
+  function drop(ev) {
+    ev.preventDefault();
+    draggedItem.style.display = "block";
+    draggedItem.style.position = "static";
+    const draggedCard = document.getElementById(
+      ev.dataTransfer.getData("text")
+    );
+    const targetCard = ev.target.closest(".taskElement");
+    const column = ev.target.closest(".task-list");
+
+    if (!draggedCard) return;
+
+    if (targetCard) {
+      const rect = targetCard.getBoundingClientRect();
+      const mouseY = ev.clientY;
+
+      if (mouseY < rect.top + rect.height / 2) {
+        targetCard.insertAdjacentElement("beforebegin", draggedCard);
+        draggedItem.style.left = ev.clientX - dx;
+        draggedItem.style.top = ev.clientY - dy;
+      } else {
+        targetCard.insertAdjacentElement("afterend", draggedCard);
+        draggedItem.style.left = ev.clientX - dx;
+        draggedItem.style.top = ev.clientY - dy;
+      }
+    } else if (column) {
+      column.appendChild(draggedCard);
+      draggedItem.style.position = "static";
+    }
+
+    let tasks = JSON.parse(localStorage.getItem("kanban-tasks")) || [];
+    const taskId = draggedCard.id;
+    const status =
+      draggedItem.parentElement.parentElement.getAttribute("data-status");
+
+    tasks = tasks.map((task) =>
+      task.id === taskId
+        ? {
+            ...task,
+            column: status,
+          }
+        : task
+    );
+
+    localStorage.setItem("kanban-tasks", JSON.stringify(tasks));
+
+    draggedItem = undefined;
+    dx = dy = 0;
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".task-list").forEach((table) => {
+      table.addEventListener("dragover", dragOver);
+      table.addEventListener("drop", drop);
+    });
+
+    document.querySelectorAll(".taskElement").forEach((card) => {
+      card.setAttribute("draggable", "true");
+      card.addEventListener("dragstart", drag);
+    });
+  });
+
+  //Dragging style
 </script>
