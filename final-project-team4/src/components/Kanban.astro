@@ -53,7 +53,13 @@
       const taskId = `task-${Date.now()}`;
 
       const taskElement = document.createElement("div");
-      taskElement.classList.add("bg-white", "rounded-lg", "p-3", "shadow-md");
+      taskElement.classList.add(
+        "bg-white",
+        "rounded-lg",
+        "p-3",
+        "shadow-md",
+        "taskElement"
+      );
       taskElement.setAttribute("data-id", taskId);
       taskElement.setAttribute("id", taskId);
       taskElement.setAttribute("draggable", "true");
@@ -193,7 +199,7 @@
 
         const taskList = document.createElement("div");
         taskList.setAttribute("ondrop", "drop(event)");
-        taskList.setAttribute("ondragover", "allowDrop(event)");
+        taskList.setAttribute("ondragover", "dragOver (event)");
         taskList.classList.add(
           "task-list",
           "h-full",
@@ -295,20 +301,70 @@
 </script>
 
 <script is:inline>
-  function allowDrop(ev) {
-    ev.preventDefault();
+  function drag(ev) {
+    ev.dataTransfer.setData("text/plain", ev.target.id);
+
+    draggedItem = ev.target;
+    dx = ev.clientX - draggedItem.getBoundingClientRect().x;
+    dy = ev.clientY - draggedItem.getBoundingClientRect().y;
+    draggedItem.style.position = "absolute";
   }
 
-  function drag(ev) {
-    ev.dataTransfer.setData("text", ev.target.id);
-    ev.dataTransfer.dropEffect = "move";
+  function dragOver(ev) {
+    ev.preventDefault();
+
+    draggedItem.style.display = "none";
+    draggedItem.style.left = ev.clientX - dx;
+    draggedItem.style.top = ev.clientY - dy;
   }
 
   function drop(ev) {
     ev.preventDefault();
-    var data = ev.dataTransfer.getData("text");
-    if (ev.target.hasAttribute("ondrop")) {
-      ev.target.appendChild(document.getElementById(data));
+    draggedItem.style.display = "block";
+    draggedItem.style.position = "static";
+    const draggedCard = document.getElementById(
+      ev.dataTransfer.getData("text")
+    );
+    const targetCard = ev.target.closest(".taskElement");
+    const column = ev.target.closest(".task-list");
+
+    if (!draggedCard) return;
+
+    if (targetCard) {
+      const rect = targetCard.getBoundingClientRect();
+      const mouseY = ev.clientY;
+
+      if (mouseY < rect.top + rect.height / 2) {
+        targetCard.insertAdjacentElement("beforebegin", draggedCard);
+        draggedItem.style.left = ev.clientX - dx;
+        draggedItem.style.top = ev.clientY - dy;
+      } else {
+        targetCard.insertAdjacentElement("afterend", draggedCard);
+        draggedItem.style.left = ev.clientX - dx;
+        draggedItem.style.top = ev.clientY - dy;
+      }
+    } else if (column) {
+      column.appendChild(draggedCard);
+      draggedItem.style.position = "static";
     }
+
+    tasks.column;
+
+    draggedItem = undefined;
+    dx = dy = 0;
   }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".task-list").forEach((table) => {
+      table.addEventListener("dragover", dragOver);
+      table.addEventListener("drop", drop);
+    });
+
+    document.querySelectorAll(".taskElement").forEach((card) => {
+      card.setAttribute("draggable", "true");
+      card.addEventListener("dragstart", drag);
+    });
+  });
+
+  //Dragging style
 </script>
