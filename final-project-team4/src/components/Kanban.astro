@@ -26,14 +26,71 @@
 </dialog>
 
 <script>
+  interface Tasks {
+    description: string;
+    element: HTMLDivElement;
+    id: string;
+    title: string;
+  }
   class TaskList {
-    constructor(status, container) {
+    status: string;
+    tasks: Tasks[];
+    container: HTMLDivElement;
+    constructor(status: string, container: HTMLDivElement) {
       this.status = status;
-      this.tasks = [];
+      this.tasks = JSON.parse(localStorage.getItem("tasks")) || [];
       this.container = container;
+
+      this.renderTasks();
     }
 
-    addTask(title, description) {
+    getTasks() {
+      return this.tasks;
+    }
+
+    saveTasks() {
+      localStorage.setItem("tasks", JSON.stringify(this.tasks));
+    }
+
+    renderTasks() {
+      this.container.innerHTML = ""; // Limpiar el contenedor antes de renderizar
+
+      this.tasks.forEach((task) => {
+        const taskElement = document.createElement("div");
+        taskElement.classList.add(
+          "bg-white",
+          "rounded-lg",
+          "p-3",
+          "shadow-md",
+          "mb-3"
+        );
+        taskElement.setAttribute("data-id", task.id);
+
+        taskElement.innerHTML = `
+      <div class="flex justify-between text-sm">
+        <span>${this.status}</span>
+        <span>--</span>
+      </div>
+      <h2 class="font-semibold text-lg">${task.title}</h2>
+      <p class="text-sm text-gray-600">${task.description}</p>
+      <button class="text-red-500 mt-2" style="font-size: 14px;">Delete</button>
+      <button class="text-blue-500 mt-2 ml-2" style="font-size: 14px;">Edit</button>
+    `;
+
+        const deleteButton = taskElement.querySelector("button.text-red-500");
+        deleteButton.addEventListener("click", () => this.remove(task.id));
+
+        const editButton = taskElement.querySelector("button.text-blue-500");
+        editButton.addEventListener("click", () =>
+          this.update(task.id, task.title, task.description)
+        );
+
+        this.container.appendChild(taskElement);
+      });
+    }
+
+    addTask(title: string, description: string) {
+      this.getTasks();
       if (!title.trim()) return;
 
       const taskId = `task-${Date.now()}`;
@@ -44,9 +101,12 @@
         "rounded-lg",
         "p-3",
         "shadow-md",
-        "mb-3"
+        "taskElement"
       );
       taskElement.setAttribute("data-id", taskId);
+      taskElement.setAttribute("id", taskId);
+      taskElement.setAttribute("draggable", "true");
+      taskElement.setAttribute("ondragstart", "drag(event)");
 
       taskElement.innerHTML = `
       <div class="flex justify-between text-sm">
@@ -63,57 +123,94 @@
       <button class="text-blue-500 mt-2 ml-2" style="font-size: 14px;">Edit</button>
     `;
 
-      const deleteButton = taskElement.querySelector("button.text-red-500");
+      const deleteButton = taskElement.querySelector(
+        "button.text-red-500"
+      ) as HTMLButtonElement;
       deleteButton.addEventListener("click", () => this.remove(taskId));
 
-      const editButton = taskElement.querySelector("button.text-blue-500");
+      const editButton = taskElement.querySelector(
+        "button.text-blue-500"
+      ) as HTMLButtonElement;
       editButton.addEventListener("click", () =>
         this.update(taskId, title, description)
       );
 
       this.tasks.push({ id: taskId, title, description, element: taskElement });
+      this.saveTasks();
+      this.renderTasks();
 
       this.container.appendChild(taskElement);
     }
 
-    remove(taskId) {
+    remove(taskId: string) {
       const taskIndex = this.tasks.findIndex((task) => task.id === taskId);
       if (taskIndex !== -1) {
         const taskElement = this.tasks[taskIndex].element;
-        this.container.removeChild(taskElement);
-        this.tasks.splice(taskIndex, 1);
+        taskElement.remove();
+        this.saveTasks();
+        this.renderTasks();
       }
     }
 
-    update(taskId, currentTitle, currentDescription) {
-      const modal = document.getElementById("task-modal");
-      const titleInput = document.getElementById("task-title");
-      const descInput = document.getElementById("task-desc");
-      const form = document.getElementById("task-form");
-      const submitButton = form.querySelector("button[type='submit']");
+    update(taskId: string, currentTitle: string, currentDescription: string) {
+      const modal = document.getElementById("task-modal") as HTMLDialogElement;
+      const titleInput = document.getElementById(
+        "task-title"
+      ) as HTMLInputElement;
+      const descInput = document.getElementById(
+        "task-desc"
+      ) as HTMLInputElement;
+      const form = document.getElementById("task-form") as HTMLFormElement;
+      const submitButton = form?.querySelector(
+        "button[type='submit']"
+      ) as HTMLButtonElement;
+      const taskStatus = document.getElementById(
+        "task-status"
+      ) as HTMLInputElement;
 
       titleInput.value = currentTitle;
       descInput.value = currentDescription;
-      document.getElementById("task-status").value = this.status;
+      taskStatus.value = this.status;
 
       form.dataset.editingTaskId = taskId;
 
       submitButton.textContent = "Update Task";
+      this.saveTasks();
+      this.renderTasks();
 
       modal.showModal();
     }
   }
 
+  interface TaskList {
+    container: HTMLDivElement;
+    status: string;
+    tasks: Tasks[];
+  }
+
+  interface TaskLists {
+    Todo: TaskList;
+    InProgress: TaskList;
+    Done: TaskList;
+  }
+
   class Kanban {
-    constructor(boardId) {
+    board;
+    statuses: string[];
+    taskLists: { [key: string]: TaskList };
+    constructor(boardId: string) {
       this.board = document.getElementById(boardId);
-      this.statuses = ["To Do", "In Progress", "Done"];
+      this.statuses = ["ToDo", "InProgress", "Done"];
       this.taskLists = {};
+    }
+
+    getTaskLists() {
+      return this.taskLists;
     }
 
     init() {
       if (!this.board) return;
-
+      this.getTaskLists();
       this.statuses.forEach((status) => {
         const column = document.createElement("div");
         column.classList.add(
@@ -149,10 +246,18 @@
         column.appendChild(header);
 
         const taskList = document.createElement("div");
-        taskList.classList.add("task-list");
+        taskList.setAttribute("ondrop", "drop(event)");
+        taskList.setAttribute("ondragover", "dragOver (event)");
+        taskList.classList.add(
+          "task-list",
+          "h-full",
+          "flex",
+          "flex-col",
+          "gap-6"
+        );
         column.appendChild(taskList);
 
-        this.board.appendChild(column);
+        this.board?.appendChild(column);
         this.taskLists[status] = new TaskList(status, taskList);
       });
 
@@ -160,23 +265,36 @@
     }
 
     setupModal() {
-      const modal = document.getElementById("task-modal");
-      const form = document.getElementById("task-form");
-      const closeModalBtn = document.getElementById("close-modal");
-      const submitButton = form.querySelector("button[type='submit']");
+      const modal = document.getElementById("task-modal") as HTMLDialogElement;
+      const form = document.getElementById("task-form") as HTMLFormElement;
+      const closeModalBtn = document.getElementById(
+        "close-modal"
+      ) as HTMLButtonElement;
+      const submitButton = form.querySelector(
+        "button[type='submit']"
+      ) as HTMLButtonElement;
 
       form.addEventListener("submit", (e) => {
         e.preventDefault();
-        const title = document.getElementById("task-title").value;
-        const description = document.getElementById("task-desc").value;
-        const status = document.getElementById("task-status").value;
+
+        const title = document.getElementById("task-title") as HTMLInputElement;
+        const description = document.getElementById(
+          "task-desc"
+        ) as HTMLInputElement;
+        const status = document.getElementById(
+          "task-status"
+        ) as HTMLInputElement;
+
+        const titleValue = title.value;
+        const descriptionValue = description.value;
+        const statusValue = status.value;
 
         const editingTaskId = form.dataset.editingTaskId;
 
         if (editingTaskId) {
-          this.updateTask(editingTaskId, title, description);
+          this.updateTask(editingTaskId, titleValue, descriptionValue);
         } else {
-          this.addTask(status, title, description);
+          this.addTask(statusValue, titleValue, descriptionValue);
         }
 
         modal.close();
@@ -188,29 +306,38 @@
       closeModalBtn.addEventListener("click", () => modal.close());
     }
 
-    openModal(status) {
-      const modal = document.getElementById("task-modal");
-      document.getElementById("task-status").value = status;
-      const form = document.getElementById("task-form");
-      const submitButton = form.querySelector("button[type='submit']");
+    openModal(status: string) {
+      this.getTaskLists();
+      const modal = document.getElementById("task-modal") as HTMLDialogElement;
+      const taskStatus = document.getElementById(
+        "task-status"
+      ) as HTMLInputElement;
+      taskStatus.value = status;
+      const form = document.getElementById("task-form") as HTMLFormElement;
+      const submitButton = form.querySelector(
+        "button[type='submit']"
+      ) as HTMLButtonElement;
       submitButton.textContent = "Add Task";
       modal.showModal();
     }
 
-    addTask(status, title, description) {
+    addTask(status: string, title: string, description: string) {
       if (this.taskLists[status]) {
         this.taskLists[status].addTask(title, description);
       }
     }
 
-    updateTask(taskId, title, description) {
+    updateTask(taskId: string, title: string, description: string) {
       for (const taskList of Object.values(this.taskLists)) {
-        const task = taskList.tasks.find((task) => task.id === taskId);
+        const task = taskList.tasks.find((task: Tasks) => task.id === taskId);
         if (task) {
+          console.log(task);
           task.title = title;
           task.description = description;
-          task.element.querySelector("h2").textContent = title;
-          task.element.querySelector("p").textContent = description;
+          const titleElement = task.element.querySelector("h2");
+          const descriptionElement = task.element.querySelector("p");
+          if (titleElement) titleElement.textContent = title;
+          if (descriptionElement) descriptionElement.textContent = description;
           break;
         }
       }
@@ -221,4 +348,73 @@
     const kanban = new Kanban("kanban-board");
     kanban.init();
   });
+</script>
+
+<script is:inline>
+  function drag(ev) {
+    ev.dataTransfer.setData("text/plain", ev.target.id);
+
+    draggedItem = ev.target;
+    dx = ev.clientX - draggedItem.getBoundingClientRect().x;
+    dy = ev.clientY - draggedItem.getBoundingClientRect().y;
+    draggedItem.style.position = "absolute";
+  }
+
+  function dragOver(ev) {
+    ev.preventDefault();
+
+    draggedItem.style.display = "none";
+    draggedItem.style.left = ev.clientX - dx;
+    draggedItem.style.top = ev.clientY - dy;
+  }
+
+  function drop(ev) {
+    ev.preventDefault();
+    draggedItem.style.display = "block";
+    draggedItem.style.position = "static";
+    const draggedCard = document.getElementById(
+      ev.dataTransfer.getData("text")
+    );
+    const targetCard = ev.target.closest(".taskElement");
+    const column = ev.target.closest(".task-list");
+
+    if (!draggedCard) return;
+
+    if (targetCard) {
+      const rect = targetCard.getBoundingClientRect();
+      const mouseY = ev.clientY;
+
+      if (mouseY < rect.top + rect.height / 2) {
+        targetCard.insertAdjacentElement("beforebegin", draggedCard);
+        draggedItem.style.left = ev.clientX - dx;
+        draggedItem.style.top = ev.clientY - dy;
+      } else {
+        targetCard.insertAdjacentElement("afterend", draggedCard);
+        draggedItem.style.left = ev.clientX - dx;
+        draggedItem.style.top = ev.clientY - dy;
+      }
+    } else if (column) {
+      column.appendChild(draggedCard);
+      draggedItem.style.position = "static";
+    }
+
+    tasks.column;
+
+    draggedItem = undefined;
+    dx = dy = 0;
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".task-list").forEach((table) => {
+      table.addEventListener("dragover", dragOver);
+      table.addEventListener("drop", drop);
+    });
+
+    document.querySelectorAll(".taskElement").forEach((card) => {
+      card.setAttribute("draggable", "true");
+      card.addEventListener("dragstart", drag);
+    });
+  });
+
+  //Dragging style
 </script>

@@ -1,0 +1,16 @@
+.drop-task {
+    height: 50%;
+    width: 60%;
+    background-color: white;
+}
+
+.main-column {
+    display: flex;
+    justify-content: center;
+}
+
+.draggable-task {
+    width: 6rem;
+    height: 6rem;
+    background-color: red;
+}
