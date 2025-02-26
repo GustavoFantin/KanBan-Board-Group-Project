@@ -153,13 +153,14 @@ import '../styles/global.css'
             const descHead = document.createElement('h2')
             const modalDesc = document.createElement('p')
             const modalAssigned = document.createElement('ul')
+            const statusHead = document.createElement('p')
             const modalColumn = document.createElement('p')
             const modalId = document.createElement('p')
             const assignHead = document.createElement('h2')
             
             overlay.classList.add('overlay', 'w-screen', 'h-screen', 'fixed', 'top-0', 'left-0', 'flex', 'justify-center', 'items-center')
             overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'
-            modalContainer.classList.add('modal-container', 'w-[80vw]', 'h-[80vh]', 'bg-white', 'bg-opacity-100', 'relative', 'rounded-[10px]')
+            modalContainer.classList.add('modal-container', 'w-[80vw]', 'h-[80vh]', 'bg-white', 'bg-opacity-100', 'relative', 'rounded-[10px]', 'p-3')
             modalTop.classList.add('w-full', 'p-2', 'flex')
             modalBottom.classList.add('w-full', 'flex')
             modalLeft.classList.add('modal-left', 'w-full', 'p-2')
@@ -167,14 +168,16 @@ import '../styles/global.css'
             modalClose.classList.add('w-fit', 'h-fit', 'p-1', 'hover:bg-gray-100', 'absolute', 'top-0', 'right-0', 'rounded-tr-[10px]')
             modalTitle.classList.add('w-full', 'text-xl', 'font-bold')
             modalId.classList.add('w-full')
-            assignHead.classList.add('w-full')
+            modalColumn.classList.add('w-full')
+            assignHead.classList.add('w-full', 'font-semibold')
+            descHead.classList.add('font-semibold')
 
             tasks.forEach((task: Task) => {
                 if (task.title === target.textContent) {
                     modalTitle.textContent = task.title
                     modalId.textContent = `ID: ${task.id}`
                     modalDesc.textContent = task.description
-                    modalColumn.textContent = task.column
+                    modalColumn.textContent = `Status: ${task.column}`
                 }
             })
 
@@ -187,6 +190,7 @@ import '../styles/global.css'
 
             modalTop.appendChild(modalTitle)
             modalTop.appendChild(modalId)
+            modalTop.appendChild(modalColumn)
             modalLeft.appendChild(descHead)
             modalLeft.appendChild(modalDesc)
             modalRight.appendChild(assignHead)
