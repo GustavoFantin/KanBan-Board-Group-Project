@@ -363,7 +363,7 @@
   function dragOver(ev) {
     ev.preventDefault();
 
-    draggedItem.style.display = "none";
+    // draggedItem.style.display = "none";
     draggedItem.style.left = ev.clientX - dx;
     draggedItem.style.top = ev.clientY - dy;
 
@@ -372,7 +372,7 @@
 
   function drop(ev) {
     if (ev.target === "none") {
-      console.log("here");
+      // console.log("here");
       // ev.preventDefault();
       // ev.dataTransfer.effectAllowed = "move";
       // ev.dataTransfer.dropEffect = "move";
@@ -390,10 +390,10 @@
 
     if (!draggedCard) return;
 
-    if (!targetCard) {
-      draggedItem.style.position = "static";
-      draggedItem.style.display = "block";
-    }
+    // if (!targetCard) {
+    //   draggedItem.style.position = "static";
+    //   draggedItem.style.display = "block";
+    // }
 
     // if (!targetCard) {
     //   draggedItem.style.position = "static";
@@ -415,9 +415,6 @@
         draggedItem.style.top = ev.clientY - dy;
       }
     } else if (column) {
-      column.appendChild(draggedCard);
-      draggedItem.style.position = "static";
-    } else if (!column) {
       column.appendChild(draggedCard);
       draggedItem.style.position = "static";
     }
