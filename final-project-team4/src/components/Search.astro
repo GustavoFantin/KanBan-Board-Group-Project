@@ -13,8 +13,6 @@ import '../styles/global.css'
 </div>
 
 <script>
-import { sequence } from "astro:middleware"
-
 
     const input = document.querySelector('input') as HTMLInputElement
     const suggestion = document.querySelector('.suggestion') as HTMLDivElement
@@ -201,8 +199,8 @@ import { sequence } from "astro:middleware"
         const modalContainer = document.createElement('div')
         const modalLeft = document.createElement('div')
         const modalRight = document.createElement('div')
-        const modalTop = document.createElement('div')
-        const modalBottom = document.createElement('div')
+        // const modalTop = document.createElement('div')
+        // const modalBottom = document.createElement('div')
         const modalTitle = document.createElement('h1')
         const descHead = document.createElement('h2')
         const modalDesc = document.createElement('p')
@@ -213,22 +211,21 @@ import { sequence } from "astro:middleware"
         
         overlay.classList.add('overlay', 'w-screen', 'h-screen', 'fixed', 'top-0', 'left-0', 'flex', 'justify-center', 'items-center')
         overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'
-        modalContainer.classList.add('modal-container', 'w-[80vw]', 'h-[80vh]', 'bg-white', 'bg-opacity-100', 'relative', 'rounded-[10px]', 'p-3')
-        modalTop.classList.add('w-full', 'p-2', 'flex')
-        modalBottom.classList.add('w-full', 'flex')
+        modalContainer.classList.add('modal-container', 'w-[80vw]', 'h-[80vh]', 'bg-white', 'bg-opacity-100', 'relative', 'rounded-[10px]', 'p-3', 'flex')
         modalLeft.classList.add('modal-left', 'w-full', 'p-2')
         modalRight.classList.add('modal-right', 'w-[30%]', 'p-2')
         modalClose.classList.add('w-fit', 'h-fit', 'p-1', 'hover:bg-gray-100', 'absolute', 'top-0', 'right-0', 'rounded-tr-[10px]')
         modalTitle.classList.add('w-full', 'text-xl', 'font-bold')
-        modalId.classList.add('w-full')
-        modalColumn.classList.add('w-full')
-        assignHead.classList.add('w-full', 'font-semibold')
+        modalId.classList.add('w-fit', 'py-1')
+        modalColumn.classList.add('w-fit', 'whitespace-nowrap')
+        assignHead.classList.add('w-full', 'font-semibold', 'py-3')
         descHead.classList.add('font-semibold')
+        modalDesc.classList.add('overflow-auto', 'max-h-[75%]', 'py-4', 'leading-normal')
 
         modalTitle.textContent = task.title
-        modalId.textContent = `ID: ${task.id}`
+        modalId.innerHTML = `<span class='font-semibold'>ID:</span> ${task.id}`
         modalDesc.textContent = task.description
-        modalColumn.textContent = `Status: ${task.column}`
+        modalColumn.innerHTML = `<span class='font-semibold'>Status:</span> ${task.column}`
         if (task.assignees && task.assignees.length > 0) {
             task.assignees.forEach((assignee: string) => {
                 const assigneeList = document.createElement('li')
@@ -240,17 +237,14 @@ import { sequence } from "astro:middleware"
         descHead.textContent = 'Description'
         assignHead.textContent = 'Assignees'
 
-        modalTop.appendChild(modalTitle)
-        modalTop.appendChild(modalId)
-        modalTop.appendChild(modalColumn)
-        modalLeft.appendChild(descHead)
+        modalLeft.appendChild(modalTitle)
         modalLeft.appendChild(modalDesc)
+        modalRight.appendChild(modalColumn)
+        modalRight.appendChild(modalId)
         modalRight.appendChild(assignHead)
         modalRight.appendChild(modalAssigned)
-        modalBottom.appendChild(modalLeft)
-        modalBottom.appendChild(modalRight)
-        modalContainer.appendChild(modalTop)
-        modalContainer.appendChild(modalBottom)
+        modalContainer.appendChild(modalLeft)
+        modalContainer.appendChild(modalRight)
         modalContainer.appendChild(modalClose)
         overlay.appendChild(modalContainer)
 
