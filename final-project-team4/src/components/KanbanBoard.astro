@@ -357,7 +357,7 @@
     draggedItem = ev.target;
     dx = ev.clientX - draggedItem.getBoundingClientRect().x;
     dy = ev.clientY - draggedItem.getBoundingClientRect().y;
-    draggedItem.style.position = "absolute";
+    // draggedItem.style.position = "absolute";
   }
 
   function dragOver(ev) {
@@ -366,12 +366,22 @@
     draggedItem.style.display = "none";
     draggedItem.style.left = ev.clientX - dx;
     draggedItem.style.top = ev.clientY - dy;
+
+    draggedItem.style.display = "block";
   }
 
   function drop(ev) {
+    if (ev.target === "none") {
+      console.log("here");
+      // ev.preventDefault();
+      // ev.dataTransfer.effectAllowed = "move";
+      // ev.dataTransfer.dropEffect = "move";
+    }
+
     ev.preventDefault();
-    draggedItem.style.display = "block";
-    draggedItem.style.position = "static";
+    // draggedItem.style.position = "static";
+    // draggedItem.style.display = "block";
+
     const draggedCard = document.getElementById(
       ev.dataTransfer.getData("text")
     );
@@ -379,6 +389,17 @@
     const column = ev.target.closest(".task-list");
 
     if (!draggedCard) return;
+
+    if (!targetCard) {
+      draggedItem.style.position = "static";
+      draggedItem.style.display = "block";
+    }
+
+    // if (!targetCard) {
+    //   draggedItem.style.position = "static";
+    //   draggedItem.style.display = "block";
+    //   return draggedCard;
+    // }
 
     if (targetCard) {
       const rect = targetCard.getBoundingClientRect();
@@ -394,6 +415,9 @@
         draggedItem.style.top = ev.clientY - dy;
       }
     } else if (column) {
+      column.appendChild(draggedCard);
+      draggedItem.style.position = "static";
+    } else if (!column) {
       column.appendChild(draggedCard);
       draggedItem.style.position = "static";
     }
@@ -419,16 +443,9 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll(".task-list").forEach((table) => {
-      table.addEventListener("dragover", dragOver);
-      table.addEventListener("drop", drop);
-    });
-
-    document.querySelectorAll(".taskElement").forEach((card) => {
-      card.setAttribute("draggable", "true");
-      card.addEventListener("dragstart", drag);
+    document.querySelectorAll(".taskElement").forEach((task) => {
+      task.setAttribute("draggable", "true");
+      task.addEventListener("dragstart", drag);
     });
   });
-
-  //Dragging style
 </script>
