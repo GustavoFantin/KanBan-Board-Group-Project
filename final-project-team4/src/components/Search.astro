@@ -19,11 +19,16 @@ import '../styles/global.css'
     const suggestionList = document.querySelector('.suggestion ul') as HTMLUListElement
     const searchBarBox = document.querySelector('.search-bar-box') as HTMLDivElement
 
+    document.querySelector('form')?.addEventListener('submit', (e) => {
+        e.preventDefault()
+    })
+
     interface Task {
         id: string
         title: string
         description: string
         column: string
+        assignees?: string[]
     }
 
     const savedTasks = localStorage.getItem('kanban-tasks')
@@ -50,11 +55,13 @@ import '../styles/global.css'
                 tasks.forEach((task: Task) => {
                     const taskTitle = task.title
                     const listItem = document.createElement('li')
-                    listItem.classList.add('hover:bg-gray-100', 'hover:opacity-80', 'p-1')
+                    listItem.classList.add('list-item', 'hover:bg-gray-100', 'hover:opacity-80', 'p-1')
                     listItem.textContent = taskTitle
                     suggestionList.appendChild(listItem)
                 })
             }
+            const firstLi = document.querySelector('.suggestion ul li') as HTMLLIElement
+            firstLi.classList.add('bg-gray-100', 'bg-opacity-80')
         })
 
         suggestionList.addEventListener('mousedown', (e: MouseEvent) => {
@@ -109,7 +116,7 @@ import '../styles/global.css'
             taskFound.forEach((task: Task) => {
                 const taskTitle = task.title
                 const listItem = document.createElement('li')
-                listItem.classList.add('hover:bg-gray-100', 'hover:opacity-80', 'p-1', 'cursor-pointer')
+                listItem.classList.add('list-item', 'hover:bg-gray-100', 'hover:opacity-80', 'p-1', 'cursor-pointer')
                 listItem.textContent = taskTitle
                 suggestionList.appendChild(listItem)
             })
@@ -120,6 +127,8 @@ import '../styles/global.css'
             suggestionList.appendChild(listItem)
         }
 
+        const firstLi = document.querySelector('.suggestion ul li') as HTMLLIElement
+        firstLi.classList.add('bg-gray-100', 'bg-opacity-80')
     })
 
      // ------------------------------- open modal function -----------------------------------
@@ -130,84 +139,141 @@ import '../styles/global.css'
 
         if (target && target.tagName === 'LI' && target.textContent !== 'No results found') {
             console.log('button clicked')
-
-            const modalClose = document.createElement('div')
-            const closeIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-            const iconPath = document.createElementNS('http://www.w3.org/2000/svg', 'path')
-
-            iconPath.setAttribute('d', 'M376.6 84.5c11.3-13.6 9.5-33.8-4.1-45.1s-33.8-9.5-45.1 4.1L192 206 56.6 43.5C45.3 29.9 25.1 28.1 11.5 39.4S-3.9 70.9 7.4 84.5L150.3 256 7.4 427.5c-11.3 13.6-9.5 33.8 4.1 45.1s33.8 9.5 45.1-4.1L192 306 327.4 468.5c11.3 13.6 31.5 15.4 45.1 4.1s15.4-31.5 4.1-45.1L233.7 256 376.6 84.5z')
-
-            closeIcon.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
-            closeIcon.setAttribute('viewBox', '0 0 384 512')
-            closeIcon.appendChild(iconPath)
-            closeIcon.classList.add('w-[26px]', 'h-[26px]')
-            modalClose.appendChild(closeIcon)
-
-            const overlay = document.createElement('div')
-            const modalContainer = document.createElement('div')
-            const modalLeft = document.createElement('div')
-            const modalRight = document.createElement('div')
-            const modalTop = document.createElement('div')
-            const modalBottom = document.createElement('div')
-            const modalTitle = document.createElement('h1')
-            const descHead = document.createElement('h2')
-            const modalDesc = document.createElement('p')
-            const modalAssigned = document.createElement('ul')
-            const statusHead = document.createElement('p')
-            const modalColumn = document.createElement('p')
-            const modalId = document.createElement('p')
-            const assignHead = document.createElement('h2')
-            
-            overlay.classList.add('overlay', 'w-screen', 'h-screen', 'fixed', 'top-0', 'left-0', 'flex', 'justify-center', 'items-center')
-            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'
-            modalContainer.classList.add('modal-container', 'w-[80vw]', 'h-[80vh]', 'bg-white', 'bg-opacity-100', 'relative', 'rounded-[10px]', 'p-3')
-            modalTop.classList.add('w-full', 'p-2', 'flex')
-            modalBottom.classList.add('w-full', 'flex')
-            modalLeft.classList.add('modal-left', 'w-full', 'p-2')
-            modalRight.classList.add('modal-right', 'w-[30%]', 'p-2')
-            modalClose.classList.add('w-fit', 'h-fit', 'p-1', 'hover:bg-gray-100', 'absolute', 'top-0', 'right-0', 'rounded-tr-[10px]')
-            modalTitle.classList.add('w-full', 'text-xl', 'font-bold')
-            modalId.classList.add('w-full')
-            modalColumn.classList.add('w-full')
-            assignHead.classList.add('w-full', 'font-semibold')
-            descHead.classList.add('font-semibold')
-
             tasks.forEach((task: Task) => {
-                if (task.title === target.textContent) {
-                    modalTitle.textContent = task.title
-                    modalId.textContent = `ID: ${task.id}`
-                    modalDesc.textContent = task.description
-                    modalColumn.textContent = `Status: ${task.column}`
+                if (target.textContent === task.title) {
+                    const selectedTask = task
+                    createModal(selectedTask)
                 }
             })
+        }
+    })
 
-            descHead.textContent = 'Description'
-            assignHead.textContent = 'Assignees'
+    suggestionList.addEventListener('keydown', (e: KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            const target = e.target as HTMLLIElement
+            console.log(target)
 
-            // tasks.forEach((task: Task) => {
-                
-            // })
+            if (target && target.tagName === 'LI' && target.textContent !== 'No results found') {
+                console.log('button clicked')
+                tasks.forEach((task: Task) => {
+                    if (target.textContent === task.title) {
+                        const selectedTask = task
+                        createModal(selectedTask)
+                    }
+                })
+            }
+        }
+    })
 
-            modalTop.appendChild(modalTitle)
-            modalTop.appendChild(modalId)
-            modalTop.appendChild(modalColumn)
-            modalLeft.appendChild(descHead)
-            modalLeft.appendChild(modalDesc)
-            modalRight.appendChild(assignHead)
-            modalRight.appendChild(modalAssigned)
-            modalBottom.appendChild(modalLeft)
-            modalBottom.appendChild(modalRight)
-            modalContainer.appendChild(modalTop)
-            modalContainer.appendChild(modalBottom)
-            modalContainer.appendChild(modalClose)
-            overlay.appendChild(modalContainer)
+    function createModal(task: Task): void {
+        const modalClose = document.createElement('div')
+        const closeIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+        const iconPath = document.createElementNS('http://www.w3.org/2000/svg', 'path')
 
-            document.body.appendChild(overlay)
+        iconPath.setAttribute('d', 'M376.6 84.5c11.3-13.6 9.5-33.8-4.1-45.1s-33.8-9.5-45.1 4.1L192 206 56.6 43.5C45.3 29.9 25.1 28.1 11.5 39.4S-3.9 70.9 7.4 84.5L150.3 256 7.4 427.5c-11.3 13.6-9.5 33.8 4.1 45.1s33.8 9.5 45.1-4.1L192 306 327.4 468.5c11.3 13.6 31.5 15.4 45.1 4.1s15.4-31.5 4.1-45.1L233.7 256 376.6 84.5z')
 
-            modalClose.addEventListener('click', () => {
-                const overlay = document.querySelector('.overlay') as HTMLDivElement
-                if(overlay) {
-                    overlay.remove()
+        closeIcon.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+        closeIcon.setAttribute('viewBox', '0 0 384 512')
+        closeIcon.appendChild(iconPath)
+        closeIcon.classList.add('w-[26px]', 'h-[26px]')
+        modalClose.appendChild(closeIcon)
+
+        const overlay = document.createElement('div')
+        const modalContainer = document.createElement('div')
+        const modalLeft = document.createElement('div')
+        const modalRight = document.createElement('div')
+        const modalTop = document.createElement('div')
+        const modalBottom = document.createElement('div')
+        const modalTitle = document.createElement('h1')
+        const descHead = document.createElement('h2')
+        const modalDesc = document.createElement('p')
+        const assignHead = document.createElement('h2')
+        const modalAssigned = document.createElement('ul')
+        const modalColumn = document.createElement('p')
+        const modalId = document.createElement('p')
+        
+        overlay.classList.add('overlay', 'w-screen', 'h-screen', 'fixed', 'top-0', 'left-0', 'flex', 'justify-center', 'items-center')
+        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'
+        modalContainer.classList.add('modal-container', 'w-[80vw]', 'h-[80vh]', 'bg-white', 'bg-opacity-100', 'relative', 'rounded-[10px]', 'p-3')
+        modalTop.classList.add('w-full', 'p-2', 'flex')
+        modalBottom.classList.add('w-full', 'flex')
+        modalLeft.classList.add('modal-left', 'w-full', 'p-2')
+        modalRight.classList.add('modal-right', 'w-[30%]', 'p-2')
+        modalClose.classList.add('w-fit', 'h-fit', 'p-1', 'hover:bg-gray-100', 'absolute', 'top-0', 'right-0', 'rounded-tr-[10px]')
+        modalTitle.classList.add('w-full', 'text-xl', 'font-bold')
+        modalId.classList.add('w-full')
+        modalColumn.classList.add('w-full')
+        assignHead.classList.add('w-full', 'font-semibold')
+        descHead.classList.add('font-semibold')
+
+        modalTitle.textContent = task.title
+        modalId.textContent = `ID: ${task.id}`
+        modalDesc.textContent = task.description
+        modalColumn.textContent = `Status: ${task.column}`
+        if (task.assignees && task.assignees.length > 0) {
+            task.assignees.forEach((assignee: string) => {
+                const assigneeList = document.createElement('li')
+                assigneeList.textContent = assignee
+                modalAssigned.appendChild(assigneeList)
+            })                        
+        }
+
+        modalTop.appendChild(modalTitle)
+        modalTop.appendChild(modalId)
+        modalTop.appendChild(modalColumn)
+        modalLeft.appendChild(descHead)
+        modalLeft.appendChild(modalDesc)
+        modalRight.appendChild(assignHead)
+        modalRight.appendChild(modalAssigned)
+        modalBottom.appendChild(modalLeft)
+        modalBottom.appendChild(modalRight)
+        modalContainer.appendChild(modalTop)
+        modalContainer.appendChild(modalBottom)
+        modalContainer.appendChild(modalClose)
+        overlay.appendChild(modalContainer)
+
+        document.body.appendChild(overlay)
+
+        modalClose.addEventListener('click', () => {
+            const overlay = document.querySelector('.overlay') as HTMLDivElement
+            if(overlay) {
+                overlay.remove()
+            }
+        })
+    }
+
+    //------------------------------------- selectable dropdown ----------------------------------------------
+
+    let selectedIndex = 0
+
+    input.addEventListener('keydown', (e: KeyboardEvent) => {
+        const suggestions = document.querySelectorAll('.list-item') as NodeListOf<HTMLLIElement>
+        console.log(`select item test`, suggestions)
+
+        
+        if (e.key === 'ArrowDown') {
+            suggestions[selectedIndex].classList.remove('bg-gray-100', 'opacity-80')
+            selectedIndex = (selectedIndex + 1) % suggestions.length
+            suggestions[selectedIndex].classList.add('bg-gray-100', 'opacity-80')
+            console.log(selectedIndex)
+            console.log(suggestions[selectedIndex])
+        } else if (e.key === 'ArrowUp') {
+            suggestions[selectedIndex].classList.remove('bg-gray-100', 'opacity-80')
+            selectedIndex = (selectedIndex -1 + suggestions.length) % suggestions.length
+            suggestions[selectedIndex].classList.add('bg-gray-100', 'opacity-80')
+            console.log(selectedIndex)
+        }
+
+        if (e.key === 'Enter' && selectedIndex >= 0) {
+            console.log(suggestions[selectedIndex].textContent)
+            suggestionList.innerHTML = ''
+            suggestionList.blur()
+            input.classList.remove('rounded-b-none')
+            searchBarBox.classList.remove('rounded-b-none')
+            tasks.forEach((task: Task) => {
+                if (task.title === suggestions[selectedIndex].textContent) {
+                    const selectedTask = task
+                    createModal(selectedTask)
                 }
             })
         }
