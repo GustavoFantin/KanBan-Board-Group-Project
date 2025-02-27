@@ -165,6 +165,12 @@ import '../styles/global.css'
         }
     })
 
+    //--------------------------------- modal from Kanban Board ------------------------------------------
+
+    document.getElementById('container')?.addEventListener('click', (e: MouseEvent) => {
+        const target = e.target as HTMLDivElement
+    })
+
     function createModal(task: Task): void {
         const modalClose = document.createElement('div')
         const closeIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
