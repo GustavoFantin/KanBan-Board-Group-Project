@@ -13,6 +13,8 @@ import '../styles/global.css'
 </div>
 
 <script>
+import { sequence } from "astro:middleware"
+
 
     const input = document.querySelector('input') as HTMLInputElement
     const suggestion = document.querySelector('.suggestion') as HTMLDivElement
@@ -55,7 +57,7 @@ import '../styles/global.css'
                 tasks.forEach((task: Task) => {
                     const taskTitle = task.title
                     const listItem = document.createElement('li')
-                    listItem.classList.add('list-item', 'hover:bg-gray-100', 'hover:opacity-80', 'p-1')
+                    listItem.classList.add('list-item', 'hover:bg-gray-100', 'hover:opacity-80', 'p-1', 'cursor-pointer')
                     listItem.textContent = taskTitle
                     suggestionList.appendChild(listItem)
                 })
@@ -169,6 +171,17 @@ import '../styles/global.css'
 
     document.getElementById('container')?.addEventListener('click', (e: MouseEvent) => {
         const target = e.target as HTMLDivElement
+        console.log('task clicked')
+        if (target.closest('.taskElement') && target.tagName !== 'BUTTON') {
+            const selectedTask = target.closest('.taskElement')
+            const taskTitle = selectedTask?.querySelector('h3') as HTMLHeadingElement
+            const stringTitle = taskTitle.textContent
+            tasks.forEach((task: Task) => {
+                if (task.title === stringTitle) {
+                    createModal(task)
+                }
+            })
+        }
     })
 
     function createModal(task: Task): void {
@@ -223,6 +236,9 @@ import '../styles/global.css'
                 modalAssigned.appendChild(assigneeList)
             })                        
         }
+
+        descHead.textContent = 'Description'
+        assignHead.textContent = 'Assignees'
 
         modalTop.appendChild(modalTitle)
         modalTop.appendChild(modalId)
