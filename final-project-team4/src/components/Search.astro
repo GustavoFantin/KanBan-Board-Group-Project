@@ -1,7 +1,7 @@
 ---
 import '../styles/global.css'
 ---
-<div class="search-container w-full h-full min-h-[20vh] flex justify-center items-center p-8"> 
+<div class="search-container w-full h-full min-h-[20vh] p-6 "> 
     <div class="search-bar-box w-[90vw] max-w-[700px] shadow-[0_0_1px] rounded-[10px] overflow-visible h-[28px] relative">
         <form>
             <input type="text" name="search" placeholder="Search..." autocomplete="off" class="w-full h-[28px] rounded-[10px] shadow-[0_0_1px] outline-none p-1">
@@ -226,16 +226,22 @@ import '../styles/global.css'
             document.getElementById('container')?.addEventListener('click', this.handleKanbanClick.bind(this))
         }
 
-        handleEditTitle (e: MouseEvent): void {
-            const target = e.target as HTMLButtonElement
-            const taskTitle = target.previousElementSibling
-            this.tasks.forEach((task: Task) => {
-                if (taskTitle?.textContent === task.title) {
-                    taskTitle.setAttribute('contenteditable', 'true')
+        // handleEditTitle (e: MouseEvent): void {
+        //     const target = e.target as HTMLButtonElement
+        //     const taskTitle = target.previousElementSibling
+        //     this.tasks.forEach((task: Task) => {
+        //         if (taskTitle?.textContent === task.title) {
+        //             const currTitle = taskTitle.textContent
                     
-                }
-            })
-        }
+        //             taskTitle.setAttribute('contenteditable', 'true')
+        //             taskTitle.addEventListener('input', () => {
+        //                 const newTitle = taskTitle.textContent
+        //                 task.title = newTitle
+        //                 localStorage.setItem('kanban-tasks', JSON.stringify(this.tasks))
+        //             })
+        //         }
+        //     })
+        // }
 
         handleCreateModal (task: Task): void {
             const modalClose = document.createElement('div')
