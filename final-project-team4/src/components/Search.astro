@@ -1,5 +1,5 @@
 ---
-import '../styles/global.css'
+import "../styles/global.css";
 ---
 <div class="search-container w-full h-full min-h-[20vh] p-6 "> 
     <div class="search-bar-box w-[90vw] max-w-[700px] shadow-[0_0_1px] rounded-[10px] overflow-visible h-[28px] relative">
@@ -190,7 +190,7 @@ import '../styles/global.css'
             this.getTask()
             const target = e.target as HTMLDivElement
             console.log('task clicked')
-            if (target.closest('.taskElement') && target.tagName !== 'BUTTON') {
+            if (target.closest('.taskElement') && !target.closest('button')) {
                 const selectedTask = target.closest('.taskElement')
                 const taskTitle = selectedTask?.querySelector('h3') as HTMLHeadingElement
                 const stringTitle = taskTitle.textContent
@@ -253,7 +253,7 @@ import '../styles/global.css'
             const modalLeft = document.createElement('div')
             const modalRight = document.createElement('div')
             const modalTitle = document.createElement('h1')
-            const titleBox = document.createElement('div')
+            // const titleBox = document.createElement('div')
             const descHead = document.createElement('h2')
             const modalDesc = document.createElement('p')
             const assignHead = document.createElement('h2')
@@ -263,17 +263,17 @@ import '../styles/global.css'
 
             // ------------------------------- edit icon ----------------------------------------------
             
-            const editTitle = document.createElement('div')
-            const titlePenIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-            const titlePenPath = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+            // const editTitle = document.createElement('div')
+            // const titlePenIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+            // const titlePenPath = document.createElementNS('http://www.w3.org/2000/svg', 'path')
 
-            titlePenPath.setAttribute('d', 'M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z')
+            // titlePenPath.setAttribute('d', 'M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z')
             
-            titlePenIcon.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
-            titlePenIcon.setAttribute('viewBox', '0 0 512 512')
-            titlePenIcon.appendChild(titlePenPath)
-            titlePenIcon.classList.add('w-[26px]', 'h-[26px]')
-            editTitle.appendChild(titlePenIcon)
+            // titlePenIcon.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+            // titlePenIcon.setAttribute('viewBox', '0 0 512 512')
+            // titlePenIcon.appendChild(titlePenPath)
+            // titlePenIcon.classList.add('w-[26px]', 'h-[26px]')
+            // editTitle.appendChild(titlePenIcon)
 
             // --------------------------------- / edit icon -----------------------------------------
             
@@ -289,7 +289,7 @@ import '../styles/global.css'
             assignHead.classList.add('w-full', 'font-semibold', 'py-3')
             descHead.classList.add('font-semibold', 'pt-4')
             modalDesc.classList.add('overflow-auto', 'max-h-[75%]', 'leading-normal')
-            titleBox.classList.add('w-full', 'flex')
+            // titleBox.classList.add('w-full', 'flex')
 
             modalTitle.textContent = task.title
             modalId.innerHTML = `<span class='font-semibold'>ID:</span> ${task.id}`
@@ -306,9 +306,10 @@ import '../styles/global.css'
             descHead.textContent = 'Description'
             assignHead.textContent = 'Assignees'
 
-            titleBox.appendChild(modalTitle)
-            titleBox.appendChild(editTitle)
-            modalLeft.appendChild(titleBox)
+            // titleBox.appendChild(modalTitle)
+            // titleBox.appendChild(editTitle)
+            // modalLeft.appendChild(titleBox)
+            modalLeft.appendChild(modalTitle)
             modalLeft.appendChild(descHead)
             modalLeft.appendChild(modalDesc)
             modalRight.appendChild(modalColumn)
