@@ -1,1 +1,12 @@
 @import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,100..1000&display=swap');
+
+body {
+    /* background-color: #b1e5ff; */
+}
+
+h2 {
+    font-family: "Roboto Flex", sans-serif;
+    font-weight: 700;
+}
