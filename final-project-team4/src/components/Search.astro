@@ -226,21 +226,13 @@ import '../styles/global.css'
             document.getElementById('container')?.addEventListener('click', this.handleKanbanClick.bind(this))
         }
 
-        // handleEditTitle (e: MouseEvent): void {
-        //     const target = e.target as HTMLButtonElement
-        //     const taskTitle = target.previousElementSibling
-        //     this.tasks.forEach((task: Task) => {
-        //         if (taskTitle?.textContent === task.title) {
-        //             const currTitle = taskTitle.textContent
-                    
-        //             taskTitle.setAttribute('contenteditable', 'true')
-        //             taskTitle.addEventListener('input', () => {
-        //                 const newTitle = taskTitle.textContent
-        //                 task.title = newTitle
-        //                 localStorage.setItem('kanban-tasks', JSON.stringify(this.tasks))
-        //             })
-        //         }
-        //     })
+        // updateTaskTitle (taskId: string, newTitle: string): void {
+        //     const taskIndex = this.tasks.findIndex(task => task.id === taskId)
+            
+        //     if (taskIndex !== -1) {
+        //         this.tasks[taskIndex].title = newTitle
+        //         localStorage.setItem('kanban-tasks', JSON.stringify(this.tasks))
+        //     }
         // }
 
         handleCreateModal (task: Task): void {
@@ -261,12 +253,29 @@ import '../styles/global.css'
             const modalLeft = document.createElement('div')
             const modalRight = document.createElement('div')
             const modalTitle = document.createElement('h1')
+            const titleBox = document.createElement('div')
             const descHead = document.createElement('h2')
             const modalDesc = document.createElement('p')
             const assignHead = document.createElement('h2')
             const modalAssigned = document.createElement('ul')
             const modalColumn = document.createElement('p')
             const modalId = document.createElement('p')
+
+            // ------------------------------- edit icon ----------------------------------------------
+            
+            const editTitle = document.createElement('div')
+            const titlePenIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+            const titlePenPath = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+
+            titlePenPath.setAttribute('d', 'M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z')
+            
+            titlePenIcon.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+            titlePenIcon.setAttribute('viewBox', '0 0 512 512')
+            titlePenIcon.appendChild(titlePenPath)
+            titlePenIcon.classList.add('w-[26px]', 'h-[26px]')
+            editTitle.appendChild(titlePenIcon)
+
+            // --------------------------------- / edit icon -----------------------------------------
             
             overlay.classList.add('overlay', 'w-screen', 'h-screen', 'fixed', 'top-0', 'left-0', 'flex', 'justify-center', 'items-center')
             overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'
@@ -280,6 +289,7 @@ import '../styles/global.css'
             assignHead.classList.add('w-full', 'font-semibold', 'py-3')
             descHead.classList.add('font-semibold', 'pt-4')
             modalDesc.classList.add('overflow-auto', 'max-h-[75%]', 'leading-normal')
+            titleBox.classList.add('w-full', 'flex')
 
             modalTitle.textContent = task.title
             modalId.innerHTML = `<span class='font-semibold'>ID:</span> ${task.id}`
@@ -296,7 +306,9 @@ import '../styles/global.css'
             descHead.textContent = 'Description'
             assignHead.textContent = 'Assignees'
 
-            modalLeft.appendChild(modalTitle)
+            titleBox.appendChild(modalTitle)
+            titleBox.appendChild(editTitle)
+            modalLeft.appendChild(titleBox)
             modalLeft.appendChild(descHead)
             modalLeft.appendChild(modalDesc)
             modalRight.appendChild(modalColumn)
@@ -322,6 +334,32 @@ import '../styles/global.css'
                     overlay.remove()
                 }
             })
+
+            // ------------------------ edit function -------------------------------
+
+            // editTitle.addEventListener('click', () => {
+            //     modalTitle.setAttribute('contenteditable', 'true')
+            //     modalTitle.focus()
+            //     const range = document.createRange()
+            //     const selection = window.getSelection()
+
+            //     if (selection) {
+            //         range.selectNodeContents(modalTitle)
+            //         selection.removeAllRanges()
+            //         selection.addRange(range)
+            //     }
+            // })
+
+            // modalTitle.addEventListener('blur', () => {
+            //     this.updateTaskTitle(task.id, modalTitle.textContent || '')
+            // })
+
+            // modalTitle.addEventListener('keydown', (e) => {
+            //     if (e.key === 'Enter') {
+            //         e.preventDefault()
+            //         modalTitle.blur()
+            //     }
+            // })
         }
     }
 
