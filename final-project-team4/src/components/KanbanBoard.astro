@@ -1,9 +1,16 @@
+<div class="kanban-header flex justify-between w-[90%] m-auto pb-7">
+  <h1 class="text-3xl font-bold">CICCC Board</h1>
+  <button
+    id="new-col-btn"
+    class="bg-white cursor-pointer hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow"
+    >+ Add Column</button
+  >
+</div>
 <div
   id="container"
   class="flex m-auto overflow-hidden rounded-lg w-[90%] flex-wrap"
 >
 </div>
-<button id="new-col-btn" class="center block m-auto">Add Column</button>
 
 <!-------------------- Modal -------------------->
 <dialog
@@ -28,10 +35,10 @@
     <button
       type="submit"
       id="submit-btn"
-      class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+      class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 cursor-pointer"
       >Add Task</button
     >
-    <button type="button" id="close-modal" class="text-red-500">Cancel</button>
+    <button type="button" id="close-modal" class="text-red-500 cursor-pointer">Cancel</button>
   </form>
 </dialog>
 
@@ -96,7 +103,7 @@
           const colors = ["bg-purple-500", "bg-green-400", "bg-blue-700"];
 
           if (index % 2 === 0) {
-            div.classList.add("bg-white");
+            div.classList.add("bg-gray-100");
           } else {
             div.classList.add("bg-gray-200");
           }
@@ -123,28 +130,45 @@
           headerContainer.appendChild(header);
 
           const buttonContainer = document.createElement("div");
-          buttonContainer.classList.add("button-container");
-
-          const deleteButton = document.createElement("button");
-          deleteButton.classList.add("button", "delete-button");
-          deleteButton.innerHTML = `...`;
-          deleteButton.addEventListener("click", () =>
-            this.deleteColumn(index)
-          );
-
-          buttonContainer.appendChild(deleteButton);
+          buttonContainer.classList.add("button-container", "flex", "gap-2");
 
           const editButton = document.createElement("button");
-          editButton.classList.add("button", "edit-button");
+          editButton.classList.add(
+            "button",
+            "edit-button",
+            "bg-white",
+            "rounded-full",
+            "p-1",
+            "cursor-pointer"
+          );
           editButton.innerHTML = `
-        <svg class="edit-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7l-6-4z"/>
-        </svg>
+        <svg class="w-[21px] h-[21px] text-yellow-500 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.779 17.779 4.36 19.918 6.5 13.5m4.279 4.279 8.364-8.643a3.027 3.027 0 0 0-2.14-5.165 3.03 3.03 0 0 0-2.14.886L6.5 13.5m4.279 4.279L6.499 13.5m2.14 2.14 6.213-6.504M12.75 7.04 17 11.28"/>
+</svg>
       `;
           editButton.addEventListener("click", () =>
             this.enableEditColumnName(index)
           );
 
+          const deleteButton = document.createElement("button");
+          deleteButton.classList.add(
+            "button",
+            "delete-button",
+            "bg-white",
+            "rounded-full",
+            "p-1",
+            "cursor-pointer"
+          );
+          deleteButton.innerHTML = `
+          <svg class="w-[21px] h-[21px] text-red-500 dark:text-red" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
+  </svg>
+          `;
+          deleteButton.addEventListener("click", () =>
+            this.deleteColumn(index)
+          );
+
+          buttonContainer.appendChild(deleteButton);
           buttonContainer.appendChild(editButton);
 
           headerContainer.appendChild(buttonContainer);
@@ -153,33 +177,33 @@
 
           const addButton = document.createElement("button");
           addButton.classList.add(
-            "text-white",
-            "px-4",
-            "py-2",
-            "rounded",
-            "hover:scale-150",
+            "add-task-btn",
+            "bg-white",
+            "border",
+            "border-gray-300",
+            "px-1",
+            "mx-auto",
+            "mb-5",
+            "block",
+            "py-1",
+            "rounded-full",
+            "hover:scale-125",
             "ease-in-out",
-            "duration-300"
+            "duration-300",
+            "cursor-pointer"
           );
-          addButton.innerHTML = `<svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+          addButton.innerHTML = `<svg class="w-5 h-5 text-gray-800 aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24">
         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14m-7 7V5"/>
         </svg>
       `;
           addButton.addEventListener("click", () => this.openModal(div));
-          headerContainer.appendChild(addButton);
 
           const taskList = document.createElement("div");
           taskList.setAttribute("ondrop", "drop(event)");
           taskList.setAttribute("ondragover", "dragOver (event)");
-          taskList.classList.add("task-list", "mt-4", "h-full", "p-4");
+          taskList.classList.add("task-list", "mt-4", "min-h-30", "p-4");
           div.appendChild(taskList);
-
-          div.addEventListener("mouseenter", () => {
-            buttonContainer.classList.add("show-buttons");
-          });
-          div.addEventListener("mouseleave", () => {
-            buttonContainer.classList.remove("show-buttons");
-          });
+          div.appendChild(addButton);
 
           this.target?.appendChild(div);
         });
@@ -224,8 +248,18 @@
 
     saveColumnName(index: number, newName: string) {
       if (newName.trim() !== "") {
+        const oldName = this.columns[index];
+
         this.columns[index] = newName.trim();
+
+        this.tasks.forEach((task) => {
+          if (task.column === oldName) {
+            task.column = newName.trim();
+          }
+        });
+
         this.saveColumnsToLocalStorage();
+        this.saveTasksToLocalStorage();
         this.renderColumns();
       } else {
         this.renderColumns();
@@ -396,7 +430,7 @@
 
       const taskList = this.currentColumn.querySelector(".task-list");
       if (taskList) {
-        taskList.appendChild(taskElement);
+        taskList.prepend(taskElement);
       }
 
       this.saveTasksToLocalStorage();
@@ -514,7 +548,7 @@
 
           const taskList = column.querySelector(".task-list");
           if (taskList) {
-            taskList.appendChild(taskElement);
+            taskList.prepend(taskElement);
           }
         }
       });

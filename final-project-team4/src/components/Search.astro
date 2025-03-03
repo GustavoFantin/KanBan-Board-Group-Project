@@ -2,9 +2,9 @@
 import "../styles/global.css";
 ---
 
-<div class="search-container w-full h-full min-h-[20vh] p-6">
+<div class="search-container w-full h-full min-h-[10vh] p-6 z-[10] relative">
   <div
-    class="search-bar-box w-[90vw] max-w-[700px] shadow-[0_0_1px] rounded-[10px] overflow-visible h-[28px] relative"
+    class="search-bar-box w-[90vw] m-auto shadow-[0_0_1px] rounded-[10px] overflow-visible h-[28px] relative"
   >
     <form>
       <input
@@ -81,7 +81,8 @@ import "../styles/global.css";
             "hover:bg-gray-100",
             "hover:opacity-80",
             "p-1",
-            "cursor-pointer"
+            "cursor-pointer",
+            "z-[10]"
           );
           listItem.textContent = taskTitle;
           this.suggestionList.appendChild(listItem);
@@ -305,6 +306,10 @@ import "../styles/global.css";
     // }
 
     handleCreateModal(task: Task): void {
+      const existingOverlay = document.querySelector(".overlay");
+      if (existingOverlay) {
+        return;
+      }
       const modalClose = document.createElement("div");
       const closeIcon = document.createElementNS(
         "http://www.w3.org/2000/svg",
@@ -364,7 +369,8 @@ import "../styles/global.css";
         "left-0",
         "flex",
         "justify-center",
-        "items-center"
+        "items-center",
+        "z-[15]"
       );
       overlay.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
       modalContainer.classList.add(
@@ -376,11 +382,13 @@ import "../styles/global.css";
         "relative",
         "rounded-[10px]",
         "p-3",
-        "flex"
+        "flex",
+        "z-[20]"
       );
       modalLeft.classList.add("modal-left", "w-full", "p-2");
       modalRight.classList.add("modal-right", "w-[30%]", "p-2");
       modalClose.classList.add(
+        "close-modal",
         "w-fit",
         "h-fit",
         "p-1",
@@ -388,7 +396,8 @@ import "../styles/global.css";
         "absolute",
         "top-0",
         "right-0",
-        "rounded-tr-[10px]"
+        "rounded-tr-[10px]",
+        "z-[20]"
       );
       modalTitle.classList.add("w-full", "text-xl", "font-bold");
       modalId.classList.add("w-fit", "py-1");
