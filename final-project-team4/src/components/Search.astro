@@ -1,7 +1,8 @@
 ---
 import "../styles/global.css";
+import userIcon from "../assets/user-icon.png"
 ---
-<div class="search-container w-full h-full min-h-[20vh] p-6 "> 
+<div class="search-container w-full h-full min-h-[20vh] p-6 flex justify-between"> 
     <div class="search-bar-box w-[90vw] max-w-[700px] shadow-[0_0_1px] rounded-[10px] overflow-visible h-[28px] relative">
         <form>
             <input type="text" name="search" placeholder="Search..." autocomplete="off" class="w-full h-[28px] rounded-[10px] shadow-[0_0_1px] outline-none p-1">
@@ -9,6 +10,9 @@ import "../styles/global.css";
         <div class="suggestion z-[10] bg-white shadow-[0_0_1px] hidden rounded-b-[10px]">
             <ul></ul>
         </div>
+    </div>
+    <div class="w-[35px] h-[35px] cursor-pointer">
+        <img src={userIcon.src} alt="user icon">
     </div>  
 </div>
 
