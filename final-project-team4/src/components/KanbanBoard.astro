@@ -9,7 +9,6 @@
 <div
   id="container"
   class="flex flex-col md:flex-row m-auto overflow-hidden rounded-lg w-[90%] flex-wrap"
->
 </div>
 
 <!-------------------- Modal -------------------->
@@ -125,7 +124,12 @@
           headerContainer.classList.add(`${fisherYatesShuffle(colors)}`);
 
           const header = document.createElement("h2");
-          header.classList.add("text-xl", "font-bold", "text-white");
+          header.classList.add(
+            "text-xl",
+            "font-bold",
+            "text-white",
+            "whitespace-nowrap"
+          );
           header.textContent = columnName;
           headerContainer.appendChild(header);
 
@@ -632,11 +636,28 @@
     draggedItem = undefined;
     dx = dy = 0;
   }
-
   document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll(".taskElement").forEach((task) => {
-      task.setAttribute("draggable", "true");
-      task.addEventListener("dragstart", drag);
-    });
+    setDraggableForTasks();
+    observeDOMChanges();
   });
+
+  function setDraggableForTasks() {
+    document.querySelectorAll(".taskElement").forEach((task) => {
+      if (!task.hasAttribute("draggable")) {
+        task.setAttribute("draggable", "true");
+        task.addEventListener("dragstart", drag);
+      }
+    });
+  }
+
+  function observeDOMChanges() {
+    const observer = new MutationObserver(() => {
+      setDraggableForTasks();
+    });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+  }
 </script>

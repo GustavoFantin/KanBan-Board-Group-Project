@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import userIcon from "../assets/user-icon.png"
 ---
 
 <div class="search-container w-full h-full min-h-[10vh] p-6 z-[10] relative">
@@ -402,7 +403,7 @@ import "../styles/global.css";
       modalTitle.classList.add("w-full", "text-xl", "font-bold");
       modalId.classList.add("w-fit", "py-1");
       modalColumn.classList.add("w-fit", "whitespace-nowrap");
-      assignHead.classList.add("w-full", "font-semibold", "py-3");
+      assignHead.classList.add("w-full", "font-semibold", "pt-2");
       descHead.classList.add("font-semibold", "pt-4");
       modalDesc.classList.add("overflow-auto", "max-h-[75%]", "leading-normal");
       // titleBox.classList.add('w-full', 'flex')
@@ -417,6 +418,10 @@ import "../styles/global.css";
           assigneeList.textContent = assignee;
           modalAssigned.appendChild(assigneeList);
         });
+      } else {
+        const noAssignee = document.createElement('li')
+        noAssignee.textContent = 'No assignees'
+        modalAssigned.appendChild(noAssignee)
       }
 
       descHead.textContent = "Description";
