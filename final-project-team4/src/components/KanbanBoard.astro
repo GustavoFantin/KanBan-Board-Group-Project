@@ -8,8 +8,7 @@
 </div>
 <div
   id="container"
-  class="flex m-auto overflow-hidden rounded-lg w-[90%] flex-wrap grid grid-cols-2 md:grid-cols-3"
->
+  class="flex flex-col md:flex-row m-auto overflow-hidden rounded-lg w-[90%] flex-wrap"
 </div>
 
 <!-------------------- Modal -------------------->
@@ -96,7 +95,7 @@
         this.target.innerHTML = "";
         this.columns.forEach((columnName, index) => {
           const div = document.createElement("div");
-          div.classList.add("kanban-column", "w-1/3", "w-full");
+          div.classList.add("kanban-column", "md:w-1/3", "w-full");
           div.setAttribute("data-status", columnName);
 
           const headerContainer = document.createElement("div");
