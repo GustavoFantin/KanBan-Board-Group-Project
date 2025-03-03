@@ -1,12 +1,58 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,100..1000&display=swap');
 @import "tailwindcss";
 
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wght@8..144,100..1000&display=swap');
-
-body {
-    /* background-color: #b1e5ff; */
-}
 
 h2 {
     font-family: "Roboto Flex", sans-serif;
     font-weight: 700;
+}
+
+.kanban-column {
+    position: relative;
+    transition: background-color 0.3s;
+}
+
+.header-container {
+    position: relative;
+    padding: 10px;
+}
+
+.button-container {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.button {
+    padding: 5px 10px;
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.3);
+    color: white;
+    cursor: pointer;
+}
+
+.button:hover {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.delete-button {
+    background-color: red;
+}
+
+.edit-button {
+    background-color: orange;
+}
+
+.edit-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.kanban-column:hover .button-container {
+    opacity: 1;
 }
