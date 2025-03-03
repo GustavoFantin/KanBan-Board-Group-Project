@@ -1,383 +1,368 @@
 ---
 import "../styles/global.css";
 ---
-
-<div
-  class="search-container w-full h-full min-h-[20vh] flex justify-center items-center p-8"
->
-  <div
-    class="search-bar-box shadow-[0_0_1px] rounded-[10px] overflow-visible h-[28px] relative"
-  >
-    <form>
-      <input
-        type="text"
-        name="search"
-        placeholder="Search..."
-        autocomplete="off"
-        class="w-[60vw] h-[28px] rounded-[10px] shadow-[0_0_1px] outline-none p-1 bg-white"
-      />
-    </form>
-    <div class="suggestion z-[10] bg-white shadow-[0_0_1px] hidden">
-      <ul></ul>
-    </div>
-  </div>
+<div class="search-container w-full h-full min-h-[20vh] p-6 "> 
+    <div class="search-bar-box w-[90vw] max-w-[700px] shadow-[0_0_1px] rounded-[10px] overflow-visible h-[28px] relative">
+        <form>
+            <input type="text" name="search" placeholder="Search..." autocomplete="off" class="w-full h-[28px] rounded-[10px] shadow-[0_0_1px] outline-none p-1">
+        </form>
+        <div class="suggestion z-[10] bg-white shadow-[0_0_1px] hidden rounded-b-[10px]">
+            <ul></ul>
+        </div>
+    </div>  
 </div>
 
 <script>
-  const input = document.querySelector("input") as HTMLInputElement;
-  const suggestion = document.querySelector(".suggestion") as HTMLDivElement;
-  const suggestionList = document.querySelector(
-    ".suggestion ul"
-  ) as HTMLUListElement;
-  const searchBarBox = document.querySelector(
-    ".search-bar-box"
-  ) as HTMLDivElement;
-
-  document.querySelector("form")?.addEventListener("submit", (e) => {
-    e.preventDefault();
-  });
-
-  interface Task {
-    id: string;
-    title: string;
-    description: string;
-    column: string;
-    assignees?: string[];
-  }
-
-  const savedTasks = localStorage.getItem("kanban-tasks");
-
-  let tasks = [];
-  if (savedTasks) {
-    tasks = JSON.parse(savedTasks);
-  }
-  console.log(savedTasks);
-  console.log(tasks);
-
-  // ------------------- function for suggestion to appear and disappear ------------------------
-
-  let isActive = false;
-
-  if (input) {
-    input.addEventListener("focus", () => {
-      isActive = true;
-      suggestion.classList.remove("hidden");
-      input.classList.add("rounded-b-none");
-      searchBarBox.classList.add("rounded-b-none");
-      if (isActive) {
-        suggestionList.innerHTML = "";
-        tasks.forEach((task: Task) => {
-          const taskTitle = task.title;
-          const listItem = document.createElement("li");
-          listItem.classList.add(
-            "list-item",
-            "hover:bg-gray-100",
-            "hover:opacity-80",
-            "p-1",
-            "cursor-pointer"
-          );
-          listItem.textContent = taskTitle;
-          suggestionList.appendChild(listItem);
-        });
-      }
-      const firstLi = document.querySelector(
-        ".suggestion ul li"
-      ) as HTMLLIElement;
-      firstLi.classList.add("bg-gray-100", "bg-opacity-80");
-    });
-
-    suggestionList.addEventListener("mousedown", (e: MouseEvent) => {
-      e.preventDefault();
-    });
-
-    input.addEventListener("blur", () => {
-      setTimeout(() => {
-        isActive = false;
-        suggestion.classList.add("hidden");
-        input.classList.remove("rounded-b-none");
-        searchBarBox.classList.remove("rounded-b-none");
-      }, 100);
-    });
-  }
-
-  // ----------------------- dynamic suggestion change based on the keyword ------------------------
-
-  // const taskList = ['wash dish', 'go to school', 'prepare lunch', 'sing a song', 'write a letter', 'walk dog', 'wash car', 'take a nap', 'read a book', 'watch a movie', 'drink water', 'open a SNS', 'make an app', 'go outside', 'push up', 'running', 'do something good']
-
-  input.addEventListener("input", (e: Event) => {
-    const inputEvent = e as InputEvent;
-    const target = inputEvent.currentTarget as HTMLInputElement;
-    const keywords = target.value.replace(/\s+/g, "").toLowerCase().split("");
-    suggestionList.innerHTML = "";
-
-    input.classList.add("rounded-b-none");
-    searchBarBox.classList.add("rounded-b-none");
-
-    if (keywords.length === 0) {
-      suggestionList.innerHTML = "";
+    interface Task {
+        id: string
+        title: string
+        description: string
+        column: string
+        assignees?: string[]
+        dueDate?: string
     }
 
-    let taskFound = tasks.filter((task: Task) => {
-      const taskTitle = task.title;
-      const taskChars = taskTitle.replace(/\s+/g, "").toLowerCase().split("");
-      return keywords.every((char) => {
-        const index = taskChars.indexOf(char);
-        if (index !== -1) {
-          taskChars.splice(index, 1);
-          return true;
-        } else {
-          return false;
+    class SearchBar {
+        input: HTMLInputElement
+        suggestionBox: HTMLDivElement
+        suggestionList: HTMLUListElement
+        searchBarBox: HTMLDivElement
+        tasks: Task[] = []
+        isActive: boolean = false
+        selectedIndex: number = 0
+
+        constructor() {
+            this.input = document.querySelector('input') as HTMLInputElement
+            this.suggestionBox = document.querySelector('.suggestion') as HTMLDivElement
+            this.suggestionList = document.querySelector('.suggestion ul') as HTMLUListElement
+            this.searchBarBox = document.querySelector('.search-bar-box') as HTMLDivElement
+
+            this.getTask()
+            this.bindEvent()
         }
-      });
-    });
 
-    console.log(taskFound);
+        getTask (): void {
+            let savedTasks = localStorage.getItem('kanban-tasks')
+            if (savedTasks) {
+                this.tasks = JSON.parse(savedTasks)
+            }
 
-    if (taskFound.length > 0) {
-      taskFound.forEach((task: Task) => {
-        const taskTitle = task.title;
-        const listItem = document.createElement("li");
-        listItem.classList.add(
-          "list-item",
-          "hover:bg-gray-100",
-          "hover:opacity-80",
-          "p-1",
-          "cursor-pointer"
-        );
-        listItem.textContent = taskTitle;
-        suggestionList.appendChild(listItem);
-      });
-    } else {
-      const listItem = document.createElement("li");
-      listItem.classList.add("p-1");
-      listItem.textContent = "No results found";
-      suggestionList.appendChild(listItem);
-    }
-
-    const firstLi = document.querySelector(
-      ".suggestion ul li"
-    ) as HTMLLIElement;
-    firstLi.classList.add("bg-gray-100", "bg-opacity-80");
-  });
-
-  // ------------------------------- open modal function -----------------------------------
-
-  suggestionList.addEventListener("click", (e: MouseEvent) => {
-    const target = e.target as HTMLLIElement;
-    console.log(target);
-
-    if (
-      target &&
-      target.tagName === "LI" &&
-      target.textContent !== "No results found"
-    ) {
-      console.log("button clicked");
-      tasks.forEach((task: Task) => {
-        if (target.textContent === task.title) {
-          const selectedTask = task;
-          createModal(selectedTask);
+            console.log(savedTasks)
         }
-      });
-    }
-  });
 
-  suggestionList.addEventListener("keydown", (e: KeyboardEvent) => {
-    if (e.key === "Enter") {
-      const target = e.target as HTMLLIElement;
-      console.log(target);
-
-      if (
-        target &&
-        target.tagName === "LI" &&
-        target.textContent !== "No results found"
-      ) {
-        console.log("button clicked");
-        tasks.forEach((task: Task) => {
-          if (target.textContent === task.title) {
-            const selectedTask = task;
-            createModal(selectedTask);
-          }
-        });
-      }
-    }
-  });
-
-  //--------------------------------- modal from Kanban Board ------------------------------------------
-
-  document
-    .getElementById("container")
-    ?.addEventListener("click", (e: MouseEvent) => {
-      const target = e.target as HTMLDivElement;
-      console.log("task clicked");
-      if (target.closest(".taskElement") && target.tagName !== "BUTTON") {
-        const selectedTask = target.closest(".taskElement");
-        const taskTitle = selectedTask?.querySelector(
-          "h3"
-        ) as HTMLHeadingElement;
-        const stringTitle = taskTitle.textContent;
-        tasks.forEach((task: Task) => {
-          if (task.title === stringTitle) {
-            createModal(task);
-          }
-        });
-      }
-    });
-
-  function createModal(task: Task): void {
-    const modalClose = document.createElement("div");
-    const closeIcon = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "svg"
-    );
-    const iconPath = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "path"
-    );
-
-    iconPath.setAttribute(
-      "d",
-      "M376.6 84.5c11.3-13.6 9.5-33.8-4.1-45.1s-33.8-9.5-45.1 4.1L192 206 56.6 43.5C45.3 29.9 25.1 28.1 11.5 39.4S-3.9 70.9 7.4 84.5L150.3 256 7.4 427.5c-11.3 13.6-9.5 33.8 4.1 45.1s33.8 9.5 45.1-4.1L192 306 327.4 468.5c11.3 13.6 31.5 15.4 45.1 4.1s15.4-31.5 4.1-45.1L233.7 256 376.6 84.5z"
-    );
-
-    closeIcon.setAttribute("xmlns", "http://www.w3.org/2000/svg");
-    closeIcon.setAttribute("viewBox", "0 0 384 512");
-    closeIcon.appendChild(iconPath);
-    closeIcon.classList.add("w-[26px]", "h-[26px]");
-    modalClose.appendChild(closeIcon);
-
-    const overlay = document.createElement("div");
-    const modalContainer = document.createElement("div");
-    const modalLeft = document.createElement("div");
-    const modalRight = document.createElement("div");
-    // const modalTop = document.createElement('div')
-    // const modalBottom = document.createElement('div')
-    const modalTitle = document.createElement("h1");
-    const descHead = document.createElement("h2");
-    const modalDesc = document.createElement("p");
-    const assignHead = document.createElement("h2");
-    const modalAssigned = document.createElement("ul");
-    const modalColumn = document.createElement("p");
-    const modalId = document.createElement("p");
-
-    overlay.classList.add(
-      "overlay",
-      "w-screen",
-      "h-screen",
-      "fixed",
-      "top-0",
-      "left-0",
-      "flex",
-      "justify-center",
-      "items-center"
-    );
-    overlay.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
-    modalContainer.classList.add(
-      "modal-container",
-      "w-[80vw]",
-      "h-[80vh]",
-      "bg-white",
-      "bg-opacity-100",
-      "relative",
-      "rounded-[10px]",
-      "p-3",
-      "flex"
-    );
-    modalLeft.classList.add("modal-left", "w-full", "p-2");
-    modalRight.classList.add("modal-right", "w-[30%]", "p-2");
-    modalClose.classList.add(
-      "w-fit",
-      "h-fit",
-      "p-1",
-      "hover:bg-gray-100",
-      "absolute",
-      "top-0",
-      "right-0",
-      "rounded-tr-[10px]"
-    );
-    modalTitle.classList.add("w-full", "text-xl", "font-bold");
-    modalId.classList.add("w-fit", "py-1");
-    modalColumn.classList.add("w-fit", "whitespace-nowrap");
-    assignHead.classList.add("w-full", "font-semibold", "py-3");
-    descHead.classList.add("font-semibold");
-    modalDesc.classList.add(
-      "overflow-auto",
-      "max-h-[75%]",
-      "py-4",
-      "leading-normal"
-    );
-
-    modalTitle.textContent = task.title;
-    modalId.innerHTML = `<span class='font-semibold'>ID:</span> ${task.id}`;
-    modalDesc.textContent = task.description;
-    modalColumn.innerHTML = `<span class='font-semibold'>Status:</span> ${task.column}`;
-    if (task.assignees && task.assignees.length > 0) {
-      task.assignees.forEach((assignee: string) => {
-        const assigneeList = document.createElement("li");
-        assigneeList.textContent = assignee;
-        modalAssigned.appendChild(assigneeList);
-      });
-    }
-
-    descHead.textContent = "Description";
-    assignHead.textContent = "Assignees";
-
-    modalLeft.appendChild(modalTitle);
-    modalLeft.appendChild(modalDesc);
-    modalRight.appendChild(modalColumn);
-    modalRight.appendChild(modalId);
-    modalRight.appendChild(assignHead);
-    modalRight.appendChild(modalAssigned);
-    modalContainer.appendChild(modalLeft);
-    modalContainer.appendChild(modalRight);
-    modalContainer.appendChild(modalClose);
-    overlay.appendChild(modalContainer);
-
-    document.body.appendChild(overlay);
-
-    modalClose.addEventListener("click", () => {
-      const overlay = document.querySelector(".overlay") as HTMLDivElement;
-      if (overlay) {
-        overlay.remove();
-      }
-    });
-  }
-
-  //------------------------------------- selectable dropdown ----------------------------------------------
-
-  let selectedIndex = 0;
-
-  input.addEventListener("keydown", (e: KeyboardEvent) => {
-    const suggestions = document.querySelectorAll(
-      ".list-item"
-    ) as NodeListOf<HTMLLIElement>;
-    console.log(`select item test`, suggestions);
-
-    if (e.key === "ArrowDown") {
-      suggestions[selectedIndex].classList.remove("bg-gray-100", "opacity-80");
-      selectedIndex = (selectedIndex + 1) % suggestions.length;
-      suggestions[selectedIndex].classList.add("bg-gray-100", "opacity-80");
-      console.log(selectedIndex);
-      console.log(suggestions[selectedIndex]);
-    } else if (e.key === "ArrowUp") {
-      suggestions[selectedIndex].classList.remove("bg-gray-100", "opacity-80");
-      selectedIndex =
-        (selectedIndex - 1 + suggestions.length) % suggestions.length;
-      suggestions[selectedIndex].classList.add("bg-gray-100", "opacity-80");
-      console.log(selectedIndex);
-    }
-
-    if (e.key === "Enter" && selectedIndex >= 0) {
-      console.log(suggestions[selectedIndex].textContent);
-      suggestionList.innerHTML = "";
-      suggestionList.blur();
-      input.classList.remove("rounded-b-none");
-      searchBarBox.classList.remove("rounded-b-none");
-      tasks.forEach((task: Task) => {
-        if (task.title === suggestions[selectedIndex].textContent) {
-          const selectedTask = task;
-          createModal(selectedTask);
+        handleFocus (): void {
+            this.getTask()
+            this.isActive = true
+            this.suggestionBox.classList.remove('hidden')
+            this.input.classList.add('rounded-b-none')
+            this.searchBarBox.classList.add('rounded-b-none')
+            if (this.isActive) {
+                this.suggestionList.innerHTML = ''
+                this.tasks.forEach((task: Task) => {
+                    const taskTitle = task.title
+                    const listItem = document.createElement('li')
+                    listItem.classList.add('list-item', 'hover:bg-gray-100', 'hover:opacity-80', 'p-1', 'cursor-pointer')
+                    listItem.textContent = taskTitle
+                    this.suggestionList.appendChild(listItem)
+                })
+            }
+            const firstLi = document.querySelector('.suggestion ul li') as HTMLLIElement
+            firstLi.classList.add('bg-gray-100', 'bg-opacity-80')
         }
-      });
+
+        handleBlur (): void {
+            setTimeout(() => {
+                this.isActive = false
+                this.suggestionBox.classList.add('hidden')
+                this.input.classList.remove('rounded-b-none')
+                this.searchBarBox.classList.remove('rounded-b-none')
+            }, 100);
+        }
+
+        handleInput (e: Event): void {
+            const inputEvent = e as InputEvent
+            const target = inputEvent.currentTarget as HTMLInputElement
+            const keywords = target.value.replace(/\s+/g, '').toLowerCase().split('')
+            this.suggestionList.innerHTML = ''
+
+            this.input.classList.add('rounded-b-none')
+            this.searchBarBox.classList.add('rounded-b-none')
+
+            if (keywords.length === 0) {
+                this.suggestionList.innerHTML = ''
+            }
+            
+            let taskFound = this.tasks.filter((task: Task) => {
+                const taskTitle = task.title
+                const taskChars = taskTitle.replace(/\s+/g, '').toLowerCase().split('')
+                return keywords.every(char => {
+                    const index = taskChars.indexOf(char)
+                    if (index !== -1) {
+                        taskChars.splice(index, 1)
+                        return true
+                    } else {
+                        return false
+                    }
+                })
+            })
+
+            console.log(taskFound)
+
+            if (taskFound.length > 0) {
+                this.renderSuggestions(taskFound)
+            } else {
+                this.renderNoResults()
+            }
+
+            const firstLi = document.querySelector('.suggestion ul li') as HTMLLIElement
+            firstLi.classList.add('bg-gray-100', 'bg-opacity-80')
+        }
+
+        renderSuggestions (tasks: Task[]): void {
+            tasks.forEach((task: Task) => {
+                const taskTitle = task.title
+                const listItem = document.createElement('li')
+                listItem.classList.add('list-item', 'hover:bg-gray-100', 'hover:opacity-80', 'p-1', 'cursor-pointer')
+                listItem.textContent = taskTitle
+                this.suggestionList.appendChild(listItem)
+            })
+        }
+
+        renderNoResults (): void {
+            const listItem = document.createElement('li')
+            listItem.classList.add('p-1')
+            listItem.textContent = 'No results found'
+            this.suggestionList.appendChild(listItem)
+        }
+
+        handleMouseDown (e: MouseEvent): void {
+            e.preventDefault()
+        }
+
+        handleSuggestionClick (e: MouseEvent): void {
+            const target = e.target as HTMLLIElement
+
+            if (target && target.tagName === 'LI' && target.textContent !== 'No results found') {
+                this.handleTaskSelect(target)
+            }
+        }
+
+        handleSuggestionEnter (e: KeyboardEvent): void {
+            if (e.key === 'Enter') {
+                const target = e.target as HTMLLIElement
+                if (target && target.tagName === 'LI' && target.textContent !== 'No results found') {
+                    this.handleTaskSelect(target)
+                }
+            }
+        }
+
+        handleKeyboardSelect (e: KeyboardEvent): void {
+            const suggestions = document.querySelectorAll('.list-item') as NodeListOf<HTMLLIElement>
+            console.log(`select item test`, suggestions)
+
+            if (e.key === 'ArrowDown') {
+                this.updateSelectedItem(suggestions, 1)
+            } else if (e.key === 'ArrowUp') {
+                this.updateSelectedItem(suggestions, -1)
+            }
+
+            if (e.key === 'Enter' && this.selectedIndex >= 0) {
+                this.suggestionList.innerHTML = ''
+                this.suggestionList.blur()
+                this.input.classList.remove('rounded-b-none')
+                this.searchBarBox.classList.remove('rounded-b-none')
+                this.tasks.forEach((task: Task) => {
+                    if (task.title === suggestions[this.selectedIndex].textContent) {
+                        const selectedTask = task
+                        this.handleCreateModal(selectedTask)
+                    }
+                })
+            }
+        }
+
+        updateSelectedItem (suggestionList: NodeListOf<HTMLLIElement>, direction: number) {
+            suggestionList[this.selectedIndex].classList.remove('bg-gray-100', 'opacity-80')
+            this.selectedIndex = (this.selectedIndex + direction + suggestionList.length) % suggestionList.length
+            suggestionList[this.selectedIndex].classList.add('bg-gray-100', 'opacity-80')
+        }
+
+        handleKanbanClick (e: MouseEvent): void {
+            this.getTask()
+            const target = e.target as HTMLDivElement
+            console.log('task clicked')
+            if (target.closest('.taskElement') && !target.closest('button')) {
+                const selectedTask = target.closest('.taskElement')
+                const taskTitle = selectedTask?.querySelector('h3') as HTMLHeadingElement
+                const stringTitle = taskTitle.textContent
+                this.tasks.forEach((task: Task) => {
+                    if (task.title === stringTitle) {
+                        this.handleCreateModal(task)
+                    }
+                })
+            }
+        }
+
+        handleTaskSelect (target: HTMLLIElement): void {
+            this.tasks.forEach((task: Task) => {
+                if (target.textContent === task.title) {
+                    this.handleCreateModal(task)
+                }
+            })
+        }
+
+        bindEvent (): void {
+            document.querySelector('form')?.addEventListener('submit', (e: SubmitEvent) => {
+                e.preventDefault()
+            })
+
+            this.input.addEventListener('focus', this.handleFocus.bind(this))
+            this.input.addEventListener('blur', this.handleBlur.bind(this))
+            this.input.addEventListener('keydown', this.handleKeyboardSelect.bind(this))
+            this.input.addEventListener('input', this.handleInput.bind(this))
+            this.suggestionList.addEventListener('mousedown', this.handleMouseDown.bind(this))
+            this.suggestionList.addEventListener('click', this.handleSuggestionClick.bind(this))
+            this.suggestionList.addEventListener('keydown', this.handleSuggestionEnter.bind(this))
+            
+            document.getElementById('container')?.addEventListener('click', this.handleKanbanClick.bind(this))
+        }
+
+        // updateTaskTitle (taskId: string, newTitle: string): void {
+        //     const taskIndex = this.tasks.findIndex(task => task.id === taskId)
+            
+        //     if (taskIndex !== -1) {
+        //         this.tasks[taskIndex].title = newTitle
+        //         localStorage.setItem('kanban-tasks', JSON.stringify(this.tasks))
+        //     }
+        // }
+
+        handleCreateModal (task: Task): void {
+            const modalClose = document.createElement('div')
+            const closeIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+            const iconPath = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+
+            iconPath.setAttribute('d', 'M376.6 84.5c11.3-13.6 9.5-33.8-4.1-45.1s-33.8-9.5-45.1 4.1L192 206 56.6 43.5C45.3 29.9 25.1 28.1 11.5 39.4S-3.9 70.9 7.4 84.5L150.3 256 7.4 427.5c-11.3 13.6-9.5 33.8 4.1 45.1s33.8 9.5 45.1-4.1L192 306 327.4 468.5c11.3 13.6 31.5 15.4 45.1 4.1s15.4-31.5 4.1-45.1L233.7 256 376.6 84.5z')
+
+            closeIcon.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+            closeIcon.setAttribute('viewBox', '0 0 384 512')
+            closeIcon.appendChild(iconPath)
+            closeIcon.classList.add('w-[26px]', 'h-[26px]')
+            modalClose.appendChild(closeIcon)
+
+            const overlay = document.createElement('div')
+            const modalContainer = document.createElement('div')
+            const modalLeft = document.createElement('div')
+            const modalRight = document.createElement('div')
+            const modalTitle = document.createElement('h1')
+            // const titleBox = document.createElement('div')
+            const descHead = document.createElement('h2')
+            const modalDesc = document.createElement('p')
+            const assignHead = document.createElement('h2')
+            const modalAssigned = document.createElement('ul')
+            const modalColumn = document.createElement('p')
+            const modalId = document.createElement('p')
+
+            // ------------------------------- edit icon ----------------------------------------------
+            
+            // const editTitle = document.createElement('div')
+            // const titlePenIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+            // const titlePenPath = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+
+            // titlePenPath.setAttribute('d', 'M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z')
+            
+            // titlePenIcon.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+            // titlePenIcon.setAttribute('viewBox', '0 0 512 512')
+            // titlePenIcon.appendChild(titlePenPath)
+            // titlePenIcon.classList.add('w-[26px]', 'h-[26px]')
+            // editTitle.appendChild(titlePenIcon)
+
+            // --------------------------------- / edit icon -----------------------------------------
+            
+            overlay.classList.add('overlay', 'w-screen', 'h-screen', 'fixed', 'top-0', 'left-0', 'flex', 'justify-center', 'items-center')
+            overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'
+            modalContainer.classList.add('modal-container', 'w-[80vw]', 'h-[80vh]', 'bg-white', 'bg-opacity-100', 'relative', 'rounded-[10px]', 'p-3', 'flex')
+            modalLeft.classList.add('modal-left', 'w-full', 'p-2')
+            modalRight.classList.add('modal-right', 'w-[30%]', 'p-2')
+            modalClose.classList.add('w-fit', 'h-fit', 'p-1', 'hover:bg-gray-100', 'absolute', 'top-0', 'right-0', 'rounded-tr-[10px]')
+            modalTitle.classList.add('w-full', 'text-xl', 'font-bold')
+            modalId.classList.add('w-fit', 'py-1')
+            modalColumn.classList.add('w-fit', 'whitespace-nowrap')
+            assignHead.classList.add('w-full', 'font-semibold', 'py-3')
+            descHead.classList.add('font-semibold', 'pt-4')
+            modalDesc.classList.add('overflow-auto', 'max-h-[75%]', 'leading-normal')
+            // titleBox.classList.add('w-full', 'flex')
+
+            modalTitle.textContent = task.title
+            modalId.innerHTML = `<span class='font-semibold'>ID:</span> ${task.id}`
+            modalDesc.textContent = task.description
+            modalColumn.innerHTML = `<span class='font-semibold'>Status:</span> ${task.column}`
+            if (task.assignees && task.assignees.length > 0) {
+                task.assignees.forEach((assignee: string) => {
+                    const assigneeList = document.createElement('li')
+                    assigneeList.textContent = assignee
+                    modalAssigned.appendChild(assigneeList)
+                })                        
+            }
+
+            descHead.textContent = 'Description'
+            assignHead.textContent = 'Assignees'
+
+            // titleBox.appendChild(modalTitle)
+            // titleBox.appendChild(editTitle)
+            // modalLeft.appendChild(titleBox)
+            modalLeft.appendChild(modalTitle)
+            modalLeft.appendChild(descHead)
+            modalLeft.appendChild(modalDesc)
+            modalRight.appendChild(modalColumn)
+            modalRight.appendChild(modalId)
+            modalRight.appendChild(assignHead)
+            modalRight.appendChild(modalAssigned)
+            modalContainer.appendChild(modalLeft)
+            modalContainer.appendChild(modalRight)
+            modalContainer.appendChild(modalClose)
+            overlay.appendChild(modalContainer)
+
+            if (task.dueDate) {
+                const dueDate = document.createElement('p')
+                dueDate.textContent = `Due: ${task.dueDate}`
+                modalRight.appendChild(dueDate)
+            }
+
+            document.body.appendChild(overlay)
+
+            modalClose.addEventListener('click', () => {
+                const overlay = document.querySelector('.overlay') as HTMLDivElement
+                if(overlay) {
+                    overlay.remove()
+                }
+            })
+
+            // ------------------------ edit function -------------------------------
+
+            // editTitle.addEventListener('click', () => {
+            //     modalTitle.setAttribute('contenteditable', 'true')
+            //     modalTitle.focus()
+            //     const range = document.createRange()
+            //     const selection = window.getSelection()
+
+            //     if (selection) {
+            //         range.selectNodeContents(modalTitle)
+            //         selection.removeAllRanges()
+            //         selection.addRange(range)
+            //     }
+            // })
+
+            // modalTitle.addEventListener('blur', () => {
+            //     this.updateTaskTitle(task.id, modalTitle.textContent || '')
+            // })
+
+            // modalTitle.addEventListener('keydown', (e) => {
+            //     if (e.key === 'Enter') {
+            //         e.preventDefault()
+            //         modalTitle.blur()
+            //     }
+            // })
+        }
     }
-  });
+
+    new SearchBar()
 </script>
