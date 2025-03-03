@@ -2,18 +2,26 @@
 import "../styles/global.css";
 import userIcon from "../assets/user-icon.png"
 ---
-<div class="search-container w-full h-full min-h-[20vh] p-6 flex justify-between"> 
-    <div class="search-bar-box w-[90vw] max-w-[700px] shadow-[0_0_1px] rounded-[10px] overflow-visible h-[28px] relative">
-        <form>
-            <input type="text" name="search" placeholder="Search..." autocomplete="off" class="w-full h-[28px] rounded-[10px] shadow-[0_0_1px] outline-none p-1">
-        </form>
-        <div class="suggestion z-[10] bg-white shadow-[0_0_1px] hidden rounded-b-[10px]">
-            <ul></ul>
-        </div>
+
+<div class="search-container w-full h-full min-h-[10vh] p-6 z-[10] relative">
+  <div
+    class="search-bar-box w-[90vw] m-auto shadow-[0_0_1px] rounded-[10px] overflow-visible h-[28px] relative"
+  >
+    <form>
+      <input
+        type="text"
+        name="search"
+        placeholder="Search..."
+        autocomplete="off"
+        class="w-full h-[28px] rounded-[10px] shadow-[0_0_1px] outline-none p-1"
+      />
+    </form>
+    <div
+      class="suggestion z-[10] bg-white shadow-[0_0_1px] hidden rounded-b-[10px]"
+    >
+      <ul></ul>
     </div>
-    <div class="w-[35px] h-[35px] cursor-pointer">
-        <img src={userIcon.src} alt="user icon">
-    </div>  
+  </div>
 </div>
 
 <script>
@@ -74,7 +82,8 @@ import userIcon from "../assets/user-icon.png"
             "hover:bg-gray-100",
             "hover:opacity-80",
             "p-1",
-            "cursor-pointer"
+            "cursor-pointer",
+            "z-[10]"
           );
           listItem.textContent = taskTitle;
           this.suggestionList.appendChild(listItem);
@@ -298,6 +307,10 @@ import userIcon from "../assets/user-icon.png"
     // }
 
     handleCreateModal(task: Task): void {
+      const existingOverlay = document.querySelector(".overlay");
+      if (existingOverlay) {
+        return;
+      }
       const modalClose = document.createElement("div");
       const closeIcon = document.createElementNS(
         "http://www.w3.org/2000/svg",
@@ -357,7 +370,8 @@ import userIcon from "../assets/user-icon.png"
         "left-0",
         "flex",
         "justify-center",
-        "items-center"
+        "items-center",
+        "z-[15]"
       );
       overlay.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
       modalContainer.classList.add(
@@ -369,11 +383,13 @@ import userIcon from "../assets/user-icon.png"
         "relative",
         "rounded-[10px]",
         "p-3",
-        "flex"
+        "flex",
+        "z-[20]"
       );
       modalLeft.classList.add("modal-left", "w-full", "p-2");
       modalRight.classList.add("modal-right", "w-[30%]", "p-2");
       modalClose.classList.add(
+        "close-modal",
         "w-fit",
         "h-fit",
         "p-1",
@@ -381,7 +397,8 @@ import userIcon from "../assets/user-icon.png"
         "absolute",
         "top-0",
         "right-0",
-        "rounded-tr-[10px]"
+        "rounded-tr-[10px]",
+        "z-[20]"
       );
       modalTitle.classList.add("w-full", "text-xl", "font-bold");
       modalId.classList.add("w-fit", "py-1");
