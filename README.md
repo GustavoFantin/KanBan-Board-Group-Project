@@ -27,3 +27,4 @@ This **Kanban Board website** was developed as a **group project for college**, 
 - **Astro**   
 - **Tailwind**   
 - **LocalStorage**   
+- **Drag and Drop HTML API**
