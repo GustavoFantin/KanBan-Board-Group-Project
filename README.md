@@ -18,7 +18,8 @@ This **Kanban Board website** was developed as a **group project for college**, 
  
 
 **Mobile:**  
-![image](https://github.com/user-attachments/assets/0bf3173d-36aa-4139-8d36-fe5e14687024)
+<img width=300px src="https://github.com/user-attachments/assets/0bf3173d-36aa-4139-8d36-fe5e14687024">
+
   
 
 ## 🛠️ Technologies Used  
