@@ -15,11 +15,11 @@ This **Kanban Board website** was developed as a **group project for college**, 
 
 ### 🏠 Main Board View  
 **Desktop:**  
-![image](https://github.com/user-attachments/assets/a7117882-01ba-42b2-81a8-61bc8f7d9892  
+ 
 
 **Mobile:**  
-<img src="![image](https://github.com/user-attachments/assets/6e2f03bb-1dbb-44ed-9221-98962f1274ce)
-" alt="Kanban Board - Mobile" width="300">  
+![image](https://github.com/user-attachments/assets/0bf3173d-36aa-4139-8d36-fe5e14687024)
+  
 
 ## 🛠️ Technologies Used  
 - **JavaScript / TypeScript**  
