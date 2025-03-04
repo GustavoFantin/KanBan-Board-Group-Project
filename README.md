@@ -15,7 +15,7 @@ This **Kanban Board website** was developed as a **group project for college**, 
 
 ### 🏠 Main Board View  
 **Desktop:**  
- 
+ <img width=600px src="https://github.com/user-attachments/assets/3bf30fd2-c64d-4ea3-ab59-8e2ef8a3c2a7">
 
 **Mobile:**  
 <img width=300px src="https://github.com/user-attachments/assets/0bf3173d-36aa-4139-8d36-fe5e14687024">
